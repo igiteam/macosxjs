@@ -1,0 +1,100 @@
+[
+  {
+    "name": "MacOSX",
+    "url": "https://cdn.sdappnet.cloud/rtx/macosx-apps.html",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png",
+    "color": "#ff5f57",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png"
+  },
+  {
+    "name": "Tomb Raider",
+    "url": "https://igiteam.github.io/OpenLara/",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/tombraider.png",
+    "color": "#ff5f57",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/tombraider.png"
+  },
+  {
+    "name": "Half-Life",
+    "url": "https://x8bitrain.github.io/webXash/",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/halflife.png",
+    "color": "#4cd964",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/halflife.png"
+  },
+  {
+    "name": "ReDriver 2",
+    "url": "https://igiteam.github.io/opendriver2.github.io/webgame/",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/redriver.jpg",
+    "color": "#007aff",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/redriver.jpg"
+  },
+  {
+    "name": "QuakeJS",
+    "url": "https://www.quakejs.com/",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/quake3favicon.png",
+    "color": "#ff9500",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/quake3favicon.png"
+  },
+  {
+    "name": "Project IGI",
+    "url": "https://igiteam.github.io/ProjectIGI/?demo",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/igifav.png",
+    "color": "#ff9500",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/igifav.png"
+  },
+  {
+    "name": "The Thing",
+    "url": "https://igiteam.github.io/TheThing/?demo",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/betateam.png",
+    "color": "#ff9500",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/betateam.png"
+  },
+  {
+    "name": "PS1",
+    "url": "https://cdn.sdappnet.cloud/rtx/macosx_ps1.html",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/Playstation-Logo-Download.png",
+    "color": "#ff9500",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/Playstation-Logo-Download.png"
+  },
+  {
+    "name": "Mario 64",
+    "url": "https://websim.com/@MrRobloxGuy/super-mario-64-web",
+    "icon": "https://img.icons8.com/color/96/000000/super-mario.png",
+    "color": "#ff2d55",
+    "dockIcon": "https://img.icons8.com/color/96/000000/super-mario.png"
+  },
+  {
+    "name": "GameboyAdvanced",
+    "url": "https://igiteam.github.io/gba.js/",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/gbafavicon.png",
+    "color": "#ff2d55",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/gbafavicon.png"
+  },
+  {
+    "name": "MOHAA",
+    "url": "https://ytembedxyz.netlify.app/?Ymd0UTVUQ25QWVk",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/MOHAA.png",
+    "color": "#ff2d55",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/MOHAA.png"
+  },
+  {
+    "name": "Doom 3",
+    "url": "https://wasm.continuation-labs.com/d3demo/",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/doom3.jpg",
+    "color": "#ff5f57",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/doom3.jpg"
+  },
+  {
+    "name": "MacOSX Windows",
+    "url": "https://cdn.sdappnet.cloud/rtx/macosx-apps_windows.html",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/windowsnt.png",
+    "color": "#ff5f57",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/windowsnt.png"
+  },
+  {
+    "name": "Webamp",
+    "url": "https://webamp.org/",
+    "icon": "https://cdn.sdappnet.cloud/rtx/images/webamp.png",
+    "color": "#ff5f57",
+    "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/webamp.png"
+  }
+]
