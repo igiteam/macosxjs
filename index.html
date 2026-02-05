@@ -1096,13 +1096,13 @@
         setInterval(updateResourceMonitor, 2000);
     </script>
     <script>
-
+        var data;
         // Sample menu items - customize as needed
         const finderMenuItems = [
             { text: 'About Finder', action: () => console.log('About Finder') },
             { text: 'Preferences...', action: () => console.log('Preferences') },
             { separator: true },
-            { text: 'Empty Trash...', action: () => console.log('Empty Trash') },
+            { text: 'Duplicate...', action: () => console.log('Empty Trash') },
             { separator: true },
             { text: 'Services', action: () => console.log('Services') },
             { text: 'Hide Finder', action: () => console.log('Hide Finder') },
@@ -1229,7 +1229,9 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                gameUrls = await response.json();
+                data = await response.json();
+                document.body.style.backgroundImage = `url(${data.wallpaperUrl || 'https://cdn.sdappnet.cloud/rtx/images/bigsur.jpg'})`;
+                gameUrls = data.gameUrls
                 console.log(`Loaded ${gameUrls.length} games from GitHub`);
 
                 // Initialize the dock with the loaded games
