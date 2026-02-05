@@ -1597,7 +1597,7 @@
                 <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
                     <h2 class="text-xl font-semibold mb-4 text-gray-800">
                         <i class="fas fa-copy mr-2 text-blue-600"></i>
-                        Duplicate Session
+                        Duplicate MacOSXJS
                     </h2>
                     
                     <p class="text-gray-600 text-sm mb-4">
@@ -1765,7 +1765,7 @@
                 document.getElementById('shareUrl').textContent = shareUrl;
 
                 // Update buttons
-                saveBtn.innerHTML = '<i class="fas fa-external-link-alt mr-2"></i>Open Session';
+                saveBtn.innerHTML = '<i class="fas fa-external-link-alt mr-2"></i>Open MacOSXJS';
                 saveBtn.disabled = false;
                 saveBtn.onclick = () => {
                     window.location.href = shareUrl;
@@ -1830,7 +1830,7 @@
                     <div class="text-gray-800 font-medium">${message}</div>
                 </div>
                 <div class="text-gray-600 text-sm">
-                    Loading your macOSXJS session...
+                    Loading your macOSXJS...
                 </div>
             </div>
         `;
@@ -1898,7 +1898,7 @@
 
                         // Show success message
                         setTimeout(() => {
-                            showToast(`Loaded session: ${configId.substring(0, 8)}...`, 'success');
+                            showToast(`Loaded MacOSXJS: ${configId.substring(0, 8)}...`, 'success');
                         }, 1000);
                     }
 
@@ -1912,7 +1912,7 @@
                     hideLoadingOverlay();
 
                     // Show error but don't prevent normal operation
-                    showToast('Configuration not found or invalid. Starting fresh session.', 'info');
+                    showToast('Configuration not found or invalid. Starting fresh MacOSXJS.', 'info');
 
                     // Clear invalid URL parameter
                     window.history.replaceState({}, '', window.location.origin);
@@ -1992,7 +1992,7 @@
                         separator: true
                     });
                     finderMenuItems.splice(preferencesIndex + 2, 0, {
-                        text: 'Duplicate Session...',
+                        text: 'Duplicate MacOSXJS...',
                         action: () => {
                             showDuplicateModal();
                             hideDropdown();
@@ -2001,7 +2001,7 @@
                 } else {
                     // Add at position 3 if Preferences not found
                     finderMenuItems.splice(3, 0, {
-                        text: 'Duplicate Session...',
+                        text: 'Duplicate MacOSXJS...',
                         action: () => {
                             showDuplicateModal();
                             hideDropdown();
