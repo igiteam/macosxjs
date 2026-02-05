@@ -1276,7 +1276,7 @@
         // DigitalOcean Spaces Storage Service
         // =============================================
 
-        class MacOSJSStorage {
+        class macOSXJSStorage {
             constructor() {
                 // Configuration - Use your existing credentials
                 this.config = {
@@ -1342,8 +1342,8 @@
                     timestamp: new Date().toISOString(),
                     version: '1.0',
                     metadata: {
-                        title: 'macOSJS Configuration',
-                        description: 'Custom macOSJS configuration',
+                        title: 'macOSXJS Configuration',
+                        description: 'Custom macOSXJS configuration',
                         author: 'User',
                         windowsCount: windows.length,
                         activeGames: windows.length
@@ -1581,7 +1581,7 @@
         // Initialize storage service
         function initStorageService() {
             try {
-                storageService = new MacOSJSStorage();
+                storageService = new macOSXJSStorage();
                 console.log('DigitalOcean Spaces Storage initialized');
                 return true;
             } catch (error) {
@@ -1601,7 +1601,7 @@
                     </h2>
                     
                     <p class="text-gray-600 text-sm mb-4">
-                        Share your current macOSJS configuration with all open windows, wallpaper, and settings.
+                        Share your current macOSXJS configuration with all open windows, wallpaper, and settings.
                     </p>
                     
                     <div id="duplicateStatus" class="mb-4 hidden">
@@ -1830,7 +1830,7 @@
                     <div class="text-gray-800 font-medium">${message}</div>
                 </div>
                 <div class="text-gray-600 text-sm">
-                    Loading your macOSJS session...
+                    Loading your macOSXJS session...
                 </div>
             </div>
         `;
