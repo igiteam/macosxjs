@@ -1102,21 +1102,7 @@
             { text: 'About Finder', action: () => console.log('About Finder') },
             { text: 'Preferences...', shortcut: '⌘,', action: () => console.log('Preferences') },
             { separator: true },
-            {
-                text: 'Duplicate MacOSXJS...',
-                shortcut: '⌘D',
-                action: () => {
-                    showDuplicateModal();
-                    hideDropdown();
-                }
-            },
-            { separator: true },
-            {
-                text: 'Services',
-                submenu: [
-                    { text: 'GitHub Repository', action: () => window.open('https://github.com/igiteam/macosxjs', '_blank') }
-                ]
-            },
+            { text: 'Fork...', action: () => window.open('https://github.com/igiteam/macosxjs', '_blank') },
             { separator: true },
             { text: 'Hide Finder', shortcut: '⌘H', action: () => console.log('Hide Finder') },
             { text: 'Hide Others', shortcut: '⌘⌥H', action: () => console.log('Hide Others') },
