@@ -9,7 +9,6 @@ redirects = []
 [build]
 publish = "/Users/gabrielmajorsky/Documents/__________win10dev.xyz/zzzzzzzzzz_game-source-code/igiteam.github.com/macosxjs"
 publishOrigin = "default"
-base = "/Users/gabrielmajorsky/Documents/__________win10dev.xyz/zzzzzzzzzz_game-source-code/igiteam.github.com/macosxjs"
 
 [build.environment]
 
