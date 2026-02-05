@@ -1270,6 +1270,787 @@
             });
         });
     </script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1492.0.min.js"></script>
+    <!-- Add AWS SDK -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.976.0.min.js"></script>
+
+    <script>
+        // =============================================
+        // DigitalOcean Spaces Storage Service
+        // =============================================
+
+        class MacOSJSStorage {
+            constructor() {
+                // Configuration - Use your existing credentials
+                this.config = {
+                    bucketName: "macosxjs",
+                    region: "fra1",
+                    endpoint: "https://fra1.digitaloceanspaces.com"
+                };
+
+                // Initialize AWS SDK with your credentials
+                AWS.config.update({
+                    accessKeyId: process.env.accessKeyId,
+                    secretAccessKey: process.env.secretAccessKey,
+                    region: this.config.region,
+                    signatureVersion: 'v4',
+                    endpoint: this.config.endpoint,
+                });
+
+                // Create S3 service object
+                this.s3 = new AWS.S3();
+
+                this.baseUrl = window.location.origin || 'https://macosxjs.netlify.app';
+            }
+
+            // Generate a random ID for the configuration
+            generateConfigId(length = 12) {
+                const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            // Prepare current app state as JSON
+            prepareAppState() {
+                // Extract wallpaper URL
+                const backgroundImage = document.body.style.backgroundImage;
+                const wallpaperUrl = backgroundImage ?
+                    backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1') :
+                    'https://cdn.sdappnet.cloud/rtx/images/bigsur.jpg';
+
+                // Extract window positions and states
+                const windowStates = windows.map(win => ({
+                    gameName: win.config.name,
+                    gameUrl: win.config.url,
+                    gameIcon: win.config.icon,
+                    gameColor: win.config.color,
+                    gameDockIcon: win.config.dockIcon,
+                    position: {
+                        top: win.element.style.top || '40px',
+                        left: win.element.style.left || '40px',
+                        width: win.element.style.width || '700px',
+                        height: win.element.style.height || '500px',
+                        zIndex: win.element.style.zIndex || '100'
+                    },
+                    isMaximized: win.isMaximized || false,
+                    isFocused: win.isFocused || false
+                }));
+
+                // Create the configuration object
+                const config = {
+                    id: this.generateConfigId(),
+                    timestamp: new Date().toISOString(),
+                    version: '1.0',
+                    metadata: {
+                        title: 'macOSJS Configuration',
+                        description: 'Custom macOSJS configuration',
+                        author: 'User',
+                        windowsCount: windows.length,
+                        activeGames: windows.length
+                    },
+                    wallpaper: {
+                        url: wallpaperUrl,
+                        brightness: 100
+                    },
+                    dock: {
+                        items: gameUrls.map(game => ({
+                            name: game.name,
+                            icon: game.dockIcon,
+                            url: game.url,
+                            color: game.color
+                        }))
+                    },
+                    windows: windowStates,
+                    settings: {
+                        showResourceMonitor: true,
+                        autoStartGames: false,
+                        defaultWindowSize: {
+                            width: 700,
+                            height: 500
+                        }
+                    },
+                    // Original game URLs for reference
+                    gameUrls: gameUrls
+                };
+
+                return config;
+            }
+
+            // Upload configuration to DigitalOcean Spaces
+            async uploadConfiguration(config) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        const BODY = JSON.stringify(config, null, 2);
+                        const KEY = `${config.id}/config.json`;
+                        const BUCKET = this.config.bucketName;
+                        const REGION = this.config.region;
+
+                        const params = {
+                            Body: BODY,
+                            Bucket: BUCKET,
+                            Key: KEY
+                        };
+
+                        console.log("Uploading configuration to DigitalOcean Spaces...");
+
+                        this.s3.putObject(params)
+                            .on("build", (request) => {
+                                request.httpRequest.headers.Host = `${BUCKET}.${REGION}.digitaloceanspaces.com`;
+                                request.httpRequest.headers["Content-Length"] = BODY.length;
+                                request.httpRequest.headers["Content-Type"] = "application/json";
+                                request.httpRequest.headers["Access-Control-Allow-Methods"] = "GET,PUT";
+                                request.httpRequest.headers["Access-Control-Allow-Origin"] = this.baseUrl;
+                                request.httpRequest.headers["Access-Control-Allow-Headers"] = "*";
+                            })
+                            .send((err, data) => {
+                                if (err) {
+                                    console.error("Upload error:", err);
+                                    reject(new Error('Failed to save configuration: ' + err.message));
+                                } else {
+                                    const shareUrl = `${this.baseUrl}?${config.id}`;
+                                    const publicUrl = `https://${BUCKET}.${REGION}.digitaloceanspaces.com/${KEY}`;
+
+                                    resolve({
+                                        success: true,
+                                        id: config.id,
+                                        url: publicUrl,
+                                        shareUrl: shareUrl,
+                                        config: config
+                                    });
+                                }
+                            });
+
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        reject(new Error('Failed to save configuration: ' + error.message));
+                    }
+                });
+            }
+
+            // Download configuration from DigitalOcean Spaces
+            async downloadConfiguration(configId) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        const params = {
+                            Bucket: this.config.bucketName,
+                            Key: `${configId}/config.json`
+                        };
+
+                        console.log("Downloading configuration from DigitalOcean Spaces...");
+
+                        this.s3.getObject(params, (err, data) => {
+                            if (err) {
+                                console.error("Download error:", err);
+                                reject(new Error('Failed to load configuration: ' + err.message));
+                            } else {
+                                try {
+                                    const objectData = data.Body.toString("utf-8");
+                                    const config = JSON.parse(objectData);
+
+                                    resolve({
+                                        success: true,
+                                        config: config
+                                    });
+                                } catch (parseError) {
+                                    reject(new Error('Failed to parse configuration: ' + parseError.message));
+                                }
+                            }
+                        });
+
+                    } catch (error) {
+                        console.error('Download error:', error);
+                        reject(new Error('Failed to load configuration: ' + error.message));
+                    }
+                });
+            }
+
+            // Apply configuration to the app
+            applyConfiguration(config) {
+                try {
+                    console.log("Applying configuration:", config.id);
+
+                    // 1. Set wallpaper
+                    if (config.wallpaper && config.wallpaper.url) {
+                        document.body.style.backgroundImage = `url('${config.wallpaper.url}')`;
+                        if (config.wallpaper.brightness) {
+                            document.body.style.filter = `brightness(${config.wallpaper.brightness}%)`;
+                        }
+                    }
+
+                    // 2. Update game URLs from config if available
+                    if (config.gameUrls && Array.isArray(config.gameUrls)) {
+                        gameUrls = [...config.gameUrls];
+
+                        // Reinitialize dock
+                        if (typeof initializeDock === 'function') {
+                            initializeDock();
+                        }
+                    }
+
+                    // 3. Close all existing windows
+                    if (windows && Array.isArray(windows)) {
+                        const windowsCopy = [...windows]; // Create copy to avoid modification during iteration
+                        windowsCopy.forEach(win => {
+                            if (typeof closeWindow === 'function' && win && win.id) {
+                                closeWindow(win.id);
+                            }
+                        });
+                    }
+
+                    // 4. Create windows from configuration (with delay to allow cleanup)
+                    if (config.windows && Array.isArray(config.windows)) {
+                        setTimeout(() => {
+                            console.log("Creating windows from config:", config.windows.length);
+
+                            config.windows.forEach((winConfig, index) => {
+                                // Find the game in gameUrls
+                                const game = gameUrls.find(g =>
+                                    g.name === winConfig.gameName ||
+                                    g.url === winConfig.gameUrl
+                                );
+
+                                if (game && typeof createWindow === 'function') {
+                                    // Create the window
+                                    const windowId = createWindow(game);
+
+                                    // Wait a bit for window to be created
+                                    setTimeout(() => {
+                                        const windowElement = document.getElementById(windowId);
+                                        const windowObj = windows.find(w => w.id === windowId);
+
+                                        if (windowElement && windowObj && winConfig.position) {
+                                            // Apply saved position and size
+                                            if (winConfig.position.top) windowElement.style.top = winConfig.position.top;
+                                            if (winConfig.position.left) windowElement.style.left = winConfig.position.left;
+                                            if (winConfig.position.width) windowElement.style.width = winConfig.position.width;
+                                            if (winConfig.position.height) windowElement.style.height = winConfig.position.height;
+                                            if (winConfig.position.zIndex) windowElement.style.zIndex = winConfig.position.zIndex;
+
+                                            // Update window object
+                                            windowObj.originalPosition = {
+                                                top: parseInt(winConfig.position.top) || 40,
+                                                left: parseInt(winConfig.position.left) || 40,
+                                                width: parseInt(winConfig.position.width) || 700,
+                                                height: parseInt(winConfig.position.height) || 500
+                                            };
+
+                                            // Apply maximized state if needed
+                                            if (winConfig.isMaximized && typeof toggleMaximizeWindow === 'function') {
+                                                setTimeout(() => {
+                                                    toggleMaximizeWindow(windowId);
+                                                }, 100);
+                                            }
+
+                                            // Apply focus if needed
+                                            if (winConfig.isFocused && typeof focusGameWindow === 'function') {
+                                                setTimeout(() => {
+                                                    focusGameWindow(windowId);
+                                                }, 200);
+                                            }
+                                        }
+                                    }, 100 * (index + 1));
+                                }
+                            });
+
+                            // Update resource monitor
+                            if (typeof updateResourceMonitor === 'function') {
+                                setTimeout(() => {
+                                    updateResourceMonitor();
+                                }, 500);
+                            }
+
+                        }, 500);
+                    }
+
+                    return true;
+
+                } catch (error) {
+                    console.error('Apply config error:', error);
+                    return false;
+                }
+            }
+        }
+
+        // =============================================
+        // Duplicate Feature Implementation
+        // =============================================
+
+        // Global storage service instance
+        let storageService;
+
+        // Initialize storage service
+        function initStorageService() {
+            try {
+                storageService = new MacOSJSStorage();
+                console.log('DigitalOcean Spaces Storage initialized');
+                return true;
+            } catch (error) {
+                console.error('Failed to initialize storage:', error);
+                return false;
+            }
+        }
+
+        // Create a modal for duplicate operation
+        function createDuplicateModal() {
+            const modalHtml = `
+            <div id="duplicateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000000000] hidden">
+                <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                        <i class="fas fa-copy mr-2 text-blue-600"></i>
+                        Duplicate Session
+                    </h2>
+                    
+                    <p class="text-gray-600 text-sm mb-4">
+                        Save your current macOSJS configuration with all open windows, wallpaper, and settings.
+                    </p>
+                    
+                    <div id="duplicateStatus" class="mb-4 hidden">
+                        <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                            <i class="fas fa-circle-notch fa-spin text-blue-600"></i>
+                            <div>
+                                <div class="font-medium text-blue-700" id="statusText">Saving configuration...</div>
+                                <div class="text-blue-600 text-sm">Please wait</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="duplicateSuccess" class="mb-4 hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center space-x-2 text-green-600 mb-2">
+                                <i class="fas fa-check-circle text-xl"></i>
+                                <span class="font-medium text-lg">Configuration Saved!</span>
+                            </div>
+                            <div class="text-green-700 text-sm space-y-2">
+                                <div>
+                                    <span class="font-medium">Session ID:</span>
+                                    <code class="bg-green-100 px-2 py-1 rounded ml-2 font-mono" id="configId"></code>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="font-medium">Share URL:</span>
+                                    <div class="mt-1 p-2 bg-green-100 rounded text-green-800 font-mono text-xs break-all" id="shareUrl"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="duplicateError" class="mb-4 hidden">
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div class="flex items-center space-x-2 text-red-600 mb-2">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span class="font-medium" id="errorTitle">Error</span>
+                            </div>
+                            <p class="text-red-700 text-sm" id="errorMessage"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                        <button id="duplicateCancel" 
+                                class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors text-sm">
+                            Cancel
+                        </button>
+                        <button id="duplicateSave" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                            <i class="fas fa-copy mr-2"></i>Save Configuration
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Add CSS for the modal
+            const style = document.createElement('style');
+            style.textContent = `
+            #duplicateModal {
+                backdrop-filter: blur(4px);
+            }
+            #duplicateModal > div {
+                max-height: 90vh;
+                overflow-y: auto;
+                animation: modalSlideIn 0.3s ease-out;
+            }
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+            document.head.appendChild(style);
+        }
+
+        // Show duplicate modal
+        function showDuplicateModal() {
+            const modal = document.getElementById('duplicateModal');
+            if (!modal) {
+                createDuplicateModal();
+            }
+
+            // Reset modal state
+            document.getElementById('duplicateStatus').classList.add('hidden');
+            document.getElementById('duplicateSuccess').classList.add('hidden');
+            document.getElementById('duplicateError').classList.add('hidden');
+
+            // Reset buttons
+            const saveBtn = document.getElementById('duplicateSave');
+            const cancelBtn = document.getElementById('duplicateCancel');
+
+            saveBtn.innerHTML = '<i class="fas fa-copy mr-2"></i>Save Configuration';
+            saveBtn.onclick = performDuplicate;
+            saveBtn.disabled = false;
+
+            cancelBtn.innerHTML = 'Cancel';
+            cancelBtn.onclick = hideDuplicateModal;
+
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        // Hide duplicate modal
+        function hideDuplicateModal() {
+            const modal = document.getElementById('duplicateModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Perform the duplicate operation
+        async function performDuplicate() {
+            try {
+                // Show loading state
+                const statusEl = document.getElementById('duplicateStatus');
+                const successEl = document.getElementById('duplicateSuccess');
+                const errorEl = document.getElementById('duplicateError');
+                const saveBtn = document.getElementById('duplicateSave');
+
+                statusEl.classList.remove('hidden');
+                successEl.classList.add('hidden');
+                errorEl.classList.add('hidden');
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Saving...';
+
+                document.getElementById('statusText').textContent = 'Saving configuration...';
+
+                // Initialize storage service if not already initialized
+                if (!storageService) {
+                    if (!initStorageService()) {
+                        throw new Error('Storage service not available. Please try again.');
+                    }
+                }
+
+                // Check if we have windows to save
+                if (!windows || windows.length === 0) {
+                    throw new Error('No windows open to save. Open some games first!');
+                }
+
+                // Prepare current app state
+                const config = storageService.prepareAppState();
+
+                // Upload to DigitalOcean Spaces
+                document.getElementById('statusText').textContent = 'Uploading to cloud storage...';
+                const result = await storageService.uploadConfiguration(config);
+
+                // Show success message
+                statusEl.classList.add('hidden');
+                successEl.classList.remove('hidden');
+
+                const shareUrl = result.shareUrl;
+                document.getElementById('configId').textContent = result.id;
+                document.getElementById('shareUrl').textContent = shareUrl;
+
+                // Update buttons
+                saveBtn.innerHTML = '<i class="fas fa-external-link-alt mr-2"></i>Open Session';
+                saveBtn.disabled = false;
+                saveBtn.onclick = () => {
+                    window.location.href = shareUrl;
+                };
+
+                const cancelBtn = document.getElementById('duplicateCancel');
+                cancelBtn.innerHTML = '<i class="far fa-copy mr-2"></i>Copy Link';
+                cancelBtn.onclick = () => {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        const originalText = cancelBtn.innerHTML;
+                        cancelBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+                        cancelBtn.classList.add('bg-green-100', 'text-green-700');
+
+                        setTimeout(() => {
+                            cancelBtn.innerHTML = originalText;
+                            cancelBtn.classList.remove('bg-green-100', 'text-green-700');
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Copy failed:', err);
+                        alert('Failed to copy to clipboard. Please copy the URL manually.');
+                    });
+                };
+
+                // Auto-copy to clipboard
+                setTimeout(() => {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        console.log('URL automatically copied to clipboard');
+                    });
+                }, 500);
+
+            } catch (error) {
+                console.error('Duplicate error:', error);
+
+                document.getElementById('duplicateStatus').classList.add('hidden');
+                document.getElementById('duplicateError').classList.remove('hidden');
+                document.getElementById('errorTitle').textContent = 'Save Failed';
+                document.getElementById('errorMessage').textContent = error.message || 'Unknown error occurred';
+
+                const saveBtn = document.getElementById('duplicateSave');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-redo mr-2"></i>Try Again';
+                saveBtn.onclick = performDuplicate;
+            }
+        }
+
+        // =============================================
+        // URL Parameter Handling for Loading Configs
+        // =============================================
+
+        // Show loading overlay
+        function showLoadingOverlay(message = 'Loading configuration...') {
+            const overlay = document.createElement('div');
+            overlay.id = 'configLoadingOverlay';
+            overlay.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[1000000000]';
+            overlay.innerHTML = `
+            <div class="bg-white rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center">
+                <div class="animate-pulse mb-4">
+                    <i class="fas fa-desktop text-4xl text-blue-600"></i>
+                </div>
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <i class="fas fa-circle-notch fa-spin text-blue-600"></i>
+                    <div class="text-gray-800 font-medium">${message}</div>
+                </div>
+                <div class="text-gray-600 text-sm">
+                    Loading your macOSJS session...
+                </div>
+            </div>
+        `;
+            document.body.appendChild(overlay);
+        }
+
+        // Hide loading overlay
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('configLoadingOverlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 300);
+            }
+        }
+
+        // Check URL for configuration ID on page load
+        async function loadConfigFromUrl() {
+            // Get config ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            let configId = null;
+
+            // Try different ways to get config ID
+            for (const key of urlParams.keys()) {
+                if (key && key.length >= 8) {
+                    configId = key;
+                    break;
+                }
+            }
+
+            // Also check for direct ID in URL (like ?abc123)
+            if (!configId && window.location.search) {
+                const search = window.location.search.substring(1);
+                if (search && search.length >= 8 && !search.includes('=')) {
+                    configId = search;
+                }
+            }
+
+            if (configId) {
+                try {
+                    console.log("Loading configuration:", configId);
+
+                    // Show loading overlay
+                    showLoadingOverlay();
+
+                    // Initialize storage service
+                    if (!storageService) {
+                        if (!initStorageService()) {
+                            throw new Error('Storage service not available');
+                        }
+                    }
+
+                    // Download configuration
+                    const result = await storageService.downloadConfiguration(configId);
+
+                    // Apply configuration
+                    if (result.success && result.config) {
+                        // Update URL to show config ID
+                        const newUrl = `${window.location.origin}?${configId}`;
+                        if (window.location.href !== newUrl) {
+                            window.history.replaceState({}, '', newUrl);
+                        }
+
+                        // Apply the configuration
+                        await storageService.applyConfiguration(result.config);
+
+                        // Show success message
+                        setTimeout(() => {
+                            showToast(`Loaded session: ${configId.substring(0, 8)}...`, 'success');
+                        }, 1000);
+                    }
+
+                    // Hide loading overlay
+                    setTimeout(hideLoadingOverlay, 1000);
+
+                } catch (error) {
+                    console.error('Failed to load configuration:', error);
+
+                    // Hide loading overlay
+                    hideLoadingOverlay();
+
+                    // Show error but don't prevent normal operation
+                    showToast('Configuration not found or invalid. Starting fresh session.', 'info');
+
+                    // Clear invalid URL parameter
+                    window.history.replaceState({}, '', window.location.origin);
+                }
+            }
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.macos-toast');
+            existingToasts.forEach(toast => toast.remove());
+
+            const toast = document.createElement('div');
+            toast.className = `macos-toast fixed top-20 right-4 px-4 py-3 rounded-lg shadow-lg z-[1000000000] transform transition-all duration-300 animate-slideIn ${type === 'error' ? 'bg-red-500 text-white' :
+                type === 'success' ? 'bg-green-500 text-white' :
+                    'bg-blue-500 text-white'
+                }`;
+            toast.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+            document.body.appendChild(toast);
+
+            // Add animation CSS
+            if (!document.querySelector('#toast-animations')) {
+                const style = document.createElement('style');
+                style.id = 'toast-animations';
+                style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                .animate-slideIn {
+                    animation: slideIn 0.3s ease-out;
+                }
+            `;
+                document.head.appendChild(style);
+            }
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // =============================================
+        // Update Finder Menu
+        // =============================================
+
+        // Update the finder menu items to include the duplicate feature
+        function updateFinderMenu() {
+            // Find Duplicate... menu item or add it
+            const duplicateIndex = finderMenuItems.findIndex(item => item.text === 'Duplicate...');
+
+            if (duplicateIndex !== -1) {
+                // Update existing duplicate action
+                finderMenuItems[duplicateIndex].action = () => {
+                    showDuplicateModal();
+                    hideDropdown();
+                };
+            } else {
+                // Add duplicate item after Preferences
+                const preferencesIndex = finderMenuItems.findIndex(item => item.text === 'Preferences...');
+                if (preferencesIndex !== -1) {
+                    finderMenuItems.splice(preferencesIndex + 1, 0, {
+                        separator: true
+                    });
+                    finderMenuItems.splice(preferencesIndex + 2, 0, {
+                        text: 'Duplicate Session...',
+                        action: () => {
+                            showDuplicateModal();
+                            hideDropdown();
+                        }
+                    });
+                } else {
+                    // Add at position 3 if Preferences not found
+                    finderMenuItems.splice(3, 0, {
+                        text: 'Duplicate Session...',
+                        action: () => {
+                            showDuplicateModal();
+                            hideDropdown();
+                        }
+                    });
+                }
+
+                // Recreate dropdown items
+                if (typeof createDropdownItems === 'function') {
+                    createDropdownItems();
+                }
+            }
+        }
+
+        // =============================================
+        // Initialize Everything
+        // =============================================
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Update finder menu with duplicate feature
+            setTimeout(() => {
+                if (typeof finderMenuItems !== 'undefined') {
+                    updateFinderMenu();
+                }
+            }, 1000);
+
+            // 2. Check for configuration in URL (with delay to allow page to load)
+            setTimeout(() => {
+                loadConfigFromUrl();
+            }, 1500);
+
+            // 3. Add keyboard shortcut for duplicate (Cmd+D or Ctrl+D)
+            document.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+                    e.preventDefault();
+                    showDuplicateModal();
+                }
+            });
+        });
+
+        // Make functions available globally
+        window.showDuplicateModal = showDuplicateModal;
+        window.hideDuplicateModal = hideDuplicateModal;
+        window.performDuplicate = performDuplicate;
+    </script>
 </body>
 
 </html>
