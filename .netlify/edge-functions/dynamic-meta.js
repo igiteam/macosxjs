@@ -1,6 +1,6 @@
 import { HTMLRewriter } from "https://raw.githubusercontent.com/worker-tools/html-rewriter/master/index.ts";
 
-const fallbackImageUrl = "https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png";
+const fallbackImageUrl = "https://cdn.sdappnet.cloud/rtx/images/macOSJS.png";
 const defaultTitle = "macOSXJS";
 const WESERV_BASE_URL = "https://img.sdappnet.cloud";
 
