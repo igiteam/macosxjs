@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS WebAssembly Gaming Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* macOS Dock */
+        .dock {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 10px 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dock-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .dock-icon:hover {
+            transform: scale(1.2) translateY(-10px);
+        }
+
+        .dock-icon.active {
+            color: #007aff;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .menu-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            font-size: 13px;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .apple-menu {
+            font-weight: bold;
+            margin-right: 30px;
+        }
+
+        .menu-item {
+            margin-right: 20px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Window Styling */
+        .window {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-width: 300px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 10;
+        }
+
+        .window.maximized {
+            top: 25px !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: calc(100vh - 85px) !important;
+            border-radius: 0;
+        }
+
+        .window-header {
+            height: 40px;
+            background: rgba(240, 240, 240, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            cursor: move;
+            user-select: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .window-title {
+            font-weight: 500;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .window-btn {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .window-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .close-btn {
+            background: #ff5f57;
+        }
+
+        .minimize-btn {
+            background: #ffbd2e;
+        }
+
+        .maximize-btn {
+            background: #28ca42;
+        }
+
+        .window-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: white;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* FIXED: Proper overlay that doesn't block iframe interaction */
+        .iframe-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            cursor: default;
+            pointer-events: none;
+            /* This is the key fix! */
+        }
+
+        /* Active window overlay - only blocks when window is not focused */
+        .iframe-overlay.active {
+            pointer-events: auto;
+        }
+
+        .resize-handle {
+            position: absolute;
+            background: transparent;
+            z-index: 20;
+        }
+
+        .resize-n {
+            top: 0;
+            left: 10px;
+            right: 10px;
+            height: 10px;
+            cursor: n-resize;
+        }
+
+        .resize-s {
+            bottom: 0;
+            left: 10px;
+            right: 10px;
+            height: 10px;
+            cursor: s-resize;
+        }
+
+        .resize-e {
+            top: 10px;
+            right: 0;
+            bottom: 10px;
+            width: 10px;
+            cursor: e-resize;
+        }
+
+        .resize-w {
+            top: 10px;
+            left: 0;
+            bottom: 10px;
+            width: 10px;
+            cursor: w-resize;
+        }
+
+        .resize-ne {
+            top: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: ne-resize;
+        }
+
+        .resize-nw {
+            top: 0;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            cursor: nw-resize;
+        }
+
+        .resize-se {
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: se-resize;
+        }
+
+        .resize-sw {
+            bottom: 0;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            cursor: sw-resize;
+        }
+
+        /* Add window button */
+        .add-window-btn {
+            position: fixed;
+            top: 40px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .add-window-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Mute controls */
+        .mute-controls {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            z-index: 30;
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            align-items: center;
+        }
+
+        .mute-btn {
+            background: #ff5f57;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .mute-btn:hover {
+            background: #ff3b30;
+        }
+
+        .window-count {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 100;
+        }
+
+        /* Game-specific icons */
+        .game-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Resource monitor */
+        .resource-monitor {
+            position: fixed;
+            top: 40px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            z-index: 100;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+
+        .resource-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .resource-value {
+            color: #4cd964;
+            font-weight: bold;
+        }
+
+        /* Focus indicator */
+        .window-focused {
+            box-shadow: 0 0 0 2px #007aff, 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .window {
+                min-width: 250px;
+                min-height: 150px;
+            }
+
+            .dock-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .resource-monitor {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- macOS Menu Bar -->
+    <div class="menu-bar">
+        <div class="apple-menu"></div>
+        <div class="menu-item">Finder</div>
+        <div class="menu-item">File</div>
+        <div class="menu-item">Edit</div>
+        <div class="menu-item">View</div>
+        <div class="menu-item">Window</div>
+        <div class="menu-item">Help</div>
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+            <span id="time">14:25</span>
+        </div>
+    </div>
+
+    <!-- Resource Monitor -->
+    <div class="resource-monitor" id="resourceMonitor">
+        <div class="resource-item">Active Windows: <span class="resource-value" id="activeWindows">0</span></div>
+        <div class="resource-item">Total Games: <span class="resource-value" id="totalGames">0</span></div>
+        <div class="resource-item">Focused: <span class="resource-value" id="focusedGame">None</span></div>
+        <div class="resource-item">Memory: <span class="resource-value" id="memoryUsage">Calculating...</span></div>
+        <div class="resource-item">Performance: <span class="resource-value" id="performance">Good</span></div>
+    </div>
+
+    <!-- Add Window Button -->
+    <button class="add-window-btn" id="addWindowBtn">
+        <i class="fas fa-plus"></i> Add Game Window
+    </button>
+
+    <!-- macOS Dock -->
+    <div class="dock">
+        <div class="dock-icon active" data-app="doom3">
+            <i class="fas fa-skull-crossbones"></i>
+        </div>
+        <div class="dock-icon" data-app="halflife">
+            <i class="fas fa-radiation"></i>
+        </div>
+        <div class="dock-icon" data-app="redriver">
+            <i class="fas fa-car"></i>
+        </div>
+        <div class="dock-icon" data-app="settings">
+            <i class="fas fa-gamepad"></i>
+        </div>
+        <div class="dock-icon" data-app="muteall">
+            <i class="fas fa-volume-mute"></i>
+        </div>
+    </div>
+
+    <!-- Windows will be added here dynamically -->
+    <div id="windowsContainer"></div>
+
+    <script>
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('time').textContent = timeString;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Game URLs - Updated with working examples
+        const gameUrls = [
+            {
+                name: "Doom 3",
+                url: "https://wasm.continuation-labs.com/d3demo/",
+                icon: "fas fa-skull-crossbones",
+                color: "#ff5f57"
+            },
+            {
+                name: "Half-Life",
+                url: "https://x8bitrain.github.io/webXash/",
+                icon: "fas fa-radiation",
+                color: "#4cd964"
+            },
+            {
+                name: "Re-Volt 2",
+                url: "https://igiteam.github.io/opendriver2.github.io/webgame/",
+                icon: "fas fa-car",
+                color: "#007aff"
+            },
+            {
+                name: "QuakeJS",
+                url: "https://www.quakejs.com/",
+                icon: "fas fa-rocket",
+                color: "#ff9500"
+            },
+            {
+                name: "Super Mario 64",
+                url: "https://mario64-web.github.io/",
+                icon: "fas fa-chess-pawn",
+                color: "#ff2d55"
+            }
+        ];
+
+        // Window management
+        let windows = [];
+        let zIndexCounter = 10;
+        let focusedWindow = null;
+
+        // Create a new window with improved iframe handling
+        function createWindow(gameConfig) {
+            const windowId = 'window-' + Date.now();
+            const windowWidth = 600;
+            const windowHeight = 450;
+
+            // Calculate position to stagger windows
+            const offset = windows.length * 30;
+            const top = 50 + offset;
+            const left = 50 + offset;
+
+            const windowHtml = `
+                <div class="window" id="${windowId}" 
+                     style="top: ${top}px; left: ${left}px; width: ${windowWidth}px; height: ${windowHeight}px; z-index: ${zIndexCounter++}">
+                    <div class="window-header">
+                        <div class="window-title">
+                            <i class="${gameConfig.icon}" style="color: ${gameConfig.color}"></i>
+                            <span class="title-text">${gameConfig.name}</span>
+                        </div>
+                        <div class="window-controls">
+                            <div class="window-btn close-btn" data-action="close"></div>
+                            <div class="window-btn minimize-btn" data-action="minimize"></div>
+                            <div class="window-btn maximize-btn" data-action="maximize"></div>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="iframe-container">
+                            <iframe 
+                                src="${gameConfig.url}" 
+                                title="${gameConfig.name}"
+                                allowfullscreen 
+                                allow="autoplay; gamepad"
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-pointer-lock"
+                                id="iframe-${windowId}"
+                            ></iframe>
+                            <div class="iframe-overlay" id="overlay-${windowId}"></div>
+                        </div>
+                        <div class="mute-controls">
+                            <button class="mute-btn" onclick="muteGameWindow('${windowId}')">
+                                <i class="fas fa-volume-mute"></i> Mute Game
+                            </button>
+                            <button class="mute-btn" onclick="focusGameWindow('${windowId}')" 
+                                    style="background: #007aff;">
+                                <i class="fas fa-mouse-pointer"></i> Focus Game
+                            </button>
+                        </div>
+                        <!-- Resize handles -->
+                        <div class="resize-handle resize-n"></div>
+                        <div class="resize-handle resize-s"></div>
+                        <div class="resize-handle resize-e"></div>
+                        <div class="resize-handle resize-w"></div>
+                        <div class="resize-handle resize-ne"></div>
+                        <div class="resize-handle resize-nw"></div>
+                        <div class="resize-handle resize-se"></div>
+                        <div class="resize-handle resize-sw"></div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('windowsContainer').insertAdjacentHTML('beforeend', windowHtml);
+
+            const windowElement = document.getElementById(windowId);
+            const iframe = document.getElementById(`iframe-${windowId}`);
+            const overlay = document.getElementById(`overlay-${windowId}`);
+
+            windows.push({
+                id: windowId,
+                element: windowElement,
+                iframe: iframe,
+                overlay: overlay,
+                config: gameConfig,
+                isMaximized: false,
+                isFocused: false,
+                isMuted: false,
+                originalPosition: { top, left, width: windowWidth, height: windowHeight }
+            });
+
+            // Make window draggable
+            makeDraggable(windowElement);
+
+            // Make window resizable
+            makeResizable(windowElement);
+
+            // Add window controls
+            setupWindowControls(windowElement);
+
+            // Focus this window when clicked
+            windowElement.addEventListener('mousedown', (e) => {
+                // Only focus if clicking on the header or overlay
+                if (e.target.closest('.window-header') || e.target.classList.contains('iframe-overlay')) {
+                    focusGameWindow(windowId);
+                }
+            });
+
+            // Try to set up postMessage communication for cross-origin mute
+            setupPostMessageCommunication(windowId, iframe);
+
+            updateResourceMonitor();
+            focusGameWindow(windowId); // Auto-focus new window
+
+            return windowId;
+        }
+
+        // FIX: Setup postMessage communication for cross-origin iframes
+        function setupPostMessageCommunication(windowId, iframe) {
+            // Listen for messages from the iframe
+            window.addEventListener('message', function (event) {
+                // Check origin for security
+                const allowedOrigins = [
+                    'https://wasm.continuation-labs.com',
+                    'https://x8bitrain.github.io',
+                    'https://igiteam.github.io'
+                ];
+
+                if (!allowedOrigins.includes(event.origin)) return;
+
+                if (event.data.type === 'MUTE_STATE') {
+                    const window = windows.find(w => w.iframe.contentWindow === event.source);
+                    if (window) {
+                        window.isMuted = event.data.muted;
+                        console.log(`${window.config.name} mute state: ${event.data.muted}`);
+                    }
+                }
+            });
+
+            // Try to send a message to the iframe (might work for some games)
+            setTimeout(() => {
+                try {
+                    iframe.contentWindow.postMessage({
+                        type: 'PARENT_INIT',
+                        canMute: true
+                    }, '*');
+                } catch (e) {
+                    // Cross-origin restriction, expected
+                }
+            }, 2000);
+        }
+
+        // FIXED: Proper focus management
+        function focusGameWindow(windowId) {
+            // Remove focus from all windows
+            windows.forEach(w => {
+                w.element.classList.remove('window-focused');
+                w.isFocused = false;
+
+                // Show overlay on non-focused windows to block input
+                if (w.overlay) {
+                    w.overlay.classList.add('active');
+                }
+            });
+
+            // Focus the selected window
+            const window = windows.find(w => w.id === windowId);
+            if (window) {
+                window.element.classList.add('window-focused');
+                window.isFocused = true;
+                window.element.style.zIndex = zIndexCounter++;
+
+                // Hide overlay on focused window to allow input
+                if (window.overlay) {
+                    window.overlay.classList.remove('active');
+                }
+
+                focusedWindow = window;
+
+                // Try to focus the iframe (works for same-origin)
+                try {
+                    window.iframe.focus();
+                } catch (e) {
+                    // Cross-origin, can't focus directly
+                }
+
+                updateResourceMonitor();
+            }
+        }
+
+        // IMPROVED: Cross-origin mute using postMessage
+        function muteGameWindow(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            if (!window) return;
+
+            // Try postMessage approach for cross-origin
+            try {
+                window.iframe.contentWindow.postMessage({
+                    type: 'SET_MUTE',
+                    mute: true
+                }, '*');
+
+                // Also try to set iframe attribute (might work for some browsers)
+                window.iframe.setAttribute('muted', 'muted');
+                window.iframe.setAttribute('volume', '0');
+
+                window.isMuted = true;
+                alert(`Attempted to mute ${window.config.name}. Some games may not support this.`);
+
+            } catch (e) {
+                // Alternative approach: Create a muted overlay with instructions
+                const muteOverlay = document.createElement('div');
+                muteOverlay.innerHTML = `
+                    <div style="
+                        position: absolute;
+                        top: 0; left: 0;
+                        width: 100%; height: 100%;
+                        background: rgba(0,0,0,0.8);
+                        color: white;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 100;
+                        text-align: center;
+                        padding: 20px;
+                    ">
+                        <i class="fas fa-volume-mute" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <h3>Audio Control Required</h3>
+                        <p>Cross-origin security prevents direct audio control.</p>
+                        <p>Please use the game's own mute button or:</p>
+                        <p>1. Click in the game window</p>
+                        <p>2. Press F11 for fullscreen</p>
+                        <p>3. Use the game's audio settings</p>
+                        <button onclick="this.parentElement.remove()" 
+                                style="margin-top: 20px; padding: 10px 20px; background: #007aff; color: white; border: none; border-radius: 5px;">
+                            Got it
+                        </button>
+                    </div>
+                `;
+
+                window.iframe.parentElement.appendChild(muteOverlay);
+            }
+        }
+
+        // Mute all games
+        function muteAllGames() {
+            windows.forEach(window => {
+                muteGameWindow(window.id);
+            });
+            alert('Attempted to mute all games. Check each window for results.');
+        }
+
+        // Make window draggable
+        function makeDraggable(windowElement) {
+            const header = windowElement.querySelector('.window-header');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            header.addEventListener('mousedown', (e) => {
+                if (windowElement.classList.contains('maximized')) return;
+
+                isDragging = true;
+                offsetX = e.clientX - windowElement.offsetLeft;
+                offsetY = e.clientY - windowElement.offsetTop;
+                document.body.style.userSelect = 'none';
+
+                // Focus this window when dragging starts
+                const windowId = windowElement.id;
+                focusGameWindow(windowId);
+
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const x = e.clientX - offsetX;
+                const y = e.clientY - offsetY;
+
+                // Keep window within bounds
+                const maxX = window.innerWidth - windowElement.offsetWidth;
+                const maxY = window.innerHeight - 60;
+
+                windowElement.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+                windowElement.style.top = Math.max(25, Math.min(y, maxY)) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                document.body.style.userSelect = '';
+            });
+        }
+
+        // Make window resizable (same as before)
+        function makeResizable(windowElement) {
+            const resizeHandles = windowElement.querySelectorAll('.resize-handle');
+            let isResizing = false;
+            let handleDirection = '';
+            let startX, startY, startWidth, startHeight, startLeft, startTop;
+
+            resizeHandles.forEach(handle => {
+                handle.addEventListener('mousedown', (e) => {
+                    if (windowElement.classList.contains('maximized')) return;
+
+                    isResizing = true;
+                    handleDirection = handle.classList[1].replace('resize-', '');
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startWidth = parseInt(getComputedStyle(windowElement).width, 10);
+                    startHeight = parseInt(getComputedStyle(windowElement).height, 10);
+                    startLeft = windowElement.offsetLeft;
+                    startTop = windowElement.offsetTop;
+
+                    document.body.style.userSelect = 'none';
+
+                    e.preventDefault();
+                });
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+
+                let newWidth = startWidth;
+                let newHeight = startHeight;
+                let newLeft = startLeft;
+                let newTop = startTop;
+
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+
+                // Calculate new size and position based on handle direction
+                switch (handleDirection) {
+                    case 'e': newWidth = Math.max(400, startWidth + deltaX); break;
+                    case 'w': newWidth = Math.max(400, startWidth - deltaX); newLeft = startLeft + deltaX; break;
+                    case 's': newHeight = Math.max(300, startHeight + deltaY); break;
+                    case 'n': newHeight = Math.max(300, startHeight - deltaY); newTop = startTop + deltaY; break;
+                    case 'se': newWidth = Math.max(400, startWidth + deltaX); newHeight = Math.max(300, startHeight + deltaY); break;
+                    case 'sw': newWidth = Math.max(400, startWidth - deltaX); newHeight = Math.max(300, startHeight + deltaY); newLeft = startLeft + deltaX; break;
+                    case 'ne': newWidth = Math.max(400, startWidth + deltaX); newHeight = Math.max(300, startHeight - deltaY); newTop = startTop + deltaY; break;
+                    case 'nw': newWidth = Math.max(400, startWidth - deltaX); newHeight = Math.max(300, startHeight - deltaY); newLeft = startLeft + deltaX; newTop = startTop + deltaY; break;
+                }
+
+                windowElement.style.width = newWidth + 'px';
+                windowElement.style.height = newHeight + 'px';
+                windowElement.style.left = newLeft + 'px';
+                windowElement.style.top = newTop + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+                document.body.style.userSelect = '';
+            });
+        }
+
+        // Setup window controls
+        function setupWindowControls(windowElement) {
+            const controls = windowElement.querySelectorAll('.window-btn');
+
+            controls.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+
+                    const action = btn.getAttribute('data-action');
+                    const windowId = windowElement.id;
+
+                    switch (action) {
+                        case 'close':
+                            closeWindow(windowId);
+                            break;
+                        case 'minimize':
+                            minimizeWindow(windowId);
+                            break;
+                        case 'maximize':
+                            toggleMaximizeWindow(windowId);
+                            break;
+                    }
+                });
+            });
+        }
+
+        // Window management functions
+        function closeWindow(windowId) {
+            const windowElement = document.getElementById(windowId);
+            windowElement.remove();
+            windows = windows.filter(w => w.id !== windowId);
+            updateResourceMonitor();
+        }
+
+        function minimizeWindow(windowId) {
+            const windowElement = document.getElementById(windowId);
+            windowElement.style.display = 'none';
+        }
+
+        function toggleMaximizeWindow(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            const windowElement = document.getElementById(windowId);
+
+            if (window.isMaximized) {
+                windowElement.classList.remove('maximized');
+                windowElement.style.top = window.originalPosition.top + 'px';
+                windowElement.style.left = window.originalPosition.left + 'px';
+                windowElement.style.width = window.originalPosition.width + 'px';
+                windowElement.style.height = window.originalPosition.height + 'px';
+                window.isMaximized = false;
+            } else {
+                window.originalPosition = {
+                    top: windowElement.offsetTop,
+                    left: windowElement.offsetLeft,
+                    width: windowElement.offsetWidth,
+                    height: windowElement.offsetHeight
+                };
+                windowElement.classList.add('maximized');
+                window.isMaximized = true;
+            }
+        }
+
+        // Update resource monitor
+        function updateResourceMonitor() {
+            document.getElementById('activeWindows').textContent = windows.length;
+            document.getElementById('totalGames').textContent = windows.length;
+            document.getElementById('focusedGame').textContent = focusedWindow ? focusedWindow.config.name : 'None';
+
+            // Estimate memory usage based on game types
+            let estimatedMemory = 0;
+            windows.forEach(w => {
+                if (w.config.name.includes('Doom')) estimatedMemory += 850;
+                else if (w.config.name.includes('Half')) estimatedMemory += 500;
+                else if (w.config.name.includes('Re-Volt')) estimatedMemory += 400;
+                else estimatedMemory += 300;
+            });
+            document.getElementById('memoryUsage').textContent = `${estimatedMemory} MB`;
+
+            // Simple performance indicator
+            const performanceLevel = windows.length <= 2 ? 'Good' :
+                windows.length <= 4 ? 'Moderate' : 'Heavy';
+            document.getElementById('performance').textContent = performanceLevel;
+        }
+
+        // Initialize with 3 game windows
+        function initializeGames() {
+            // Create first 3 games
+            createWindow(gameUrls[0]);
+            createWindow(gameUrls[1]);
+            createWindow(gameUrls[2]);
+        }
+
+        // Add event listeners
+        document.getElementById('addWindowBtn').addEventListener('click', () => {
+            // Pick a random game
+            const randomIndex = Math.floor(Math.random() * gameUrls.length);
+            createWindow(gameUrls[randomIndex]);
+        });
+
+        // Dock click events
+        document.querySelectorAll('.dock-icon').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                const app = e.currentTarget.getAttribute('data-app');
+
+                // Remove active class from all
+                document.querySelectorAll('.dock-icon').forEach(i => i.classList.remove('active'));
+                // Add active to clicked
+                e.currentTarget.classList.add('active');
+
+                if (app === 'doom3') {
+                    createWindow(gameUrls[0]);
+                } else if (app === 'halflife') {
+                    createWindow(gameUrls[1]);
+                } else if (app === 'redriver') {
+                    createWindow(gameUrls[2]);
+                } else if (app === 'settings') {
+                    createWindow(gameUrls[3]); // QuakeJS
+                } else if (app === 'muteall') {
+                    muteAllGames();
+                }
+            });
+        });
+
+        // Auto-focus windows when clicking on overlay
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('iframe-overlay')) {
+                const windowId = e.target.id.replace('overlay-', '');
+                focusGameWindow(windowId);
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', initializeGames);
+
+        // Update monitor every 2 seconds
+        setInterval(updateResourceMonitor, 2000);
+
+        // Initial update
+        updateResourceMonitor();
+    </script>
+</body>
+
+</html>

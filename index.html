@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOSJS</title>
+
+    <link rel="icon" href="https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png" type="image/png">
+    <link rel="apple-touch-icon" href="https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png" sizes="180x180">
+    <link rel="icon" type="image/png" href="https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png" sizes="192x192">
+    <link rel="icon" type="image/png" href="https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png" sizes="512x512">
+    <meta itemprop="name" content="macOSJS">
+    <meta itemprop="image" content="https://cdn.sdappnet.cloud/rtx/images/macOSJS.png">
+    <meta property="og:title" content="macOSJS">
+    <meta property="og:image" content="https://cdn.sdappnet.cloud/rtx/images/macOSJS.png">
+    <meta property="og:url" content="">
+    <meta property="og:type" content="website">
+    <meta name="twitter:title" content="macOSJS">
+    <meta name="twitter:image" content="https://cdn.sdappnet.cloud/rtx/images/macOSJS.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="apple-touch-icon" href="https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png" sizes="180x180">
+
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        .font-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                "Liberation Mono", "Courier New", monospace !important;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .blur {
+            backdrop-filter: blur(48px);
+        }
+
+        .filter-invert {
+            filter: invert();
+        }
+
+        /* Enhanced Dock Styles */
+        ul.osx-dock {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 99999999 !important;
+            position: relative;
+        }
+
+        ul.osx-dock li {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100000000;
+        }
+
+        ul.osx-dock li img {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        ul.osx-dock li:hover {
+            transform: scale(1.2) translateY(-10px);
+            z-index: 100000001 !important;
+        }
+
+        /* Ensure the tooltip appears above everything */
+        ul.osx-dock li span {
+            background: rgba(0, 0, 0, 0.75);
+            font-size: 12px;
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            padding: 4px 8px;
+            color: #fff;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 100000002 !important;
+        }
+
+        ul.osx-dock li:hover span {
+            display: block;
+        }
+
+        /* Ensure dock stays above everything when active */
+        ul.osx-dock {
+            z-index: 99999999 !important;
+        }
+
+        /* Make sure dock items appear above all windows */
+        ul.osx-dock li {
+            z-index: 100000000;
+            position: relative;
+        }
+
+        /* When hovering any dock item, bring the entire dock to front */
+        ul.osx-dock:hover li {
+            z-index: 100000001;
+        }
+
+        /* Enhanced Window Styling */
+        .window {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-width: 400px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 10;
+        }
+
+        .window.maximized {
+            top: 25px !important;
+            left: 0 !important;
+            width: calc(100% - 4px) !important;
+            height: calc(100vh - 90px) !important;
+            border-radius: 0;
+            margin: 2px;
+        }
+
+        .window-header {
+            height: 32px;
+            background: rgba(240, 240, 240, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            cursor: move;
+            user-select: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .window-focused {
+            box-shadow: 0 0 0 2px #007aff, 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .traffic-lights {
+            display: flex;
+            gap: 8px;
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .traffic-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .traffic-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .close-btn {
+            background: #ff5f57;
+        }
+
+        .minimize-btn {
+            background: #ffbd2e;
+        }
+
+        .maximize-btn {
+            background: #28ca42;
+        }
+
+        .window-title {
+            font-weight: 500;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .window-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: white;
+        }
+
+        /* NEW: Window Footer */
+        .window-footer {
+            height: 24px;
+            background: rgba(238, 232, 232, 0.95);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 3px;
+            flex-shrink: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .window.maximized .window-footer {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .footer-control-btn {
+            color: black;
+            border: none;
+            padding: 3px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .footer-control-btn.mute:hover {
+            color: black;
+        }
+
+        .footer-control-btn.fullscreen:hover {
+            color: black;
+        }
+
+        .footer-control-btn.focus:hover {
+            color: black;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Fixed overlay system */
+        .iframe-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .iframe-overlay.active {
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        /* Controls */
+        .game-controls {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            z-index: 30;
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 6px 10px;
+            border-radius: 20px;
+            color: white;
+            font-size: 11px;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .control-btn:hover {
+            background: #0056cc;
+        }
+
+        .control-btn.mute {
+            background: #ff5f57;
+        }
+
+        .control-btn.mute:hover {
+            background: #ff3b30;
+        }
+
+        /* Resize handles */
+        .resize-handle {
+            position: absolute;
+            background: transparent;
+            z-index: 20;
+        }
+
+        .resize-n {
+            top: 0;
+            left: 10px;
+            right: 10px;
+            height: 10px;
+            cursor: n-resize;
+        }
+
+        .resize-s {
+            bottom: 0;
+            left: 10px;
+            right: 10px;
+            height: 10px;
+            cursor: s-resize;
+        }
+
+        .resize-e {
+            top: 10px;
+            right: 0;
+            bottom: 10px;
+            width: 10px;
+            cursor: e-resize;
+        }
+
+        .resize-w {
+            top: 10px;
+            left: 0;
+            bottom: 10px;
+            width: 10px;
+            cursor: w-resize;
+        }
+
+        .resize-ne {
+            top: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: ne-resize;
+        }
+
+        .resize-nw {
+            top: 0;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            cursor: nw-resize;
+        }
+
+        .resize-se {
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: se-resize;
+        }
+
+        .resize-sw {
+            bottom: 0;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            cursor: sw-resize;
+        }
+
+        /* Resource Monitor */
+        .resource-monitor {
+            position: fixed;
+            bottom: -8px;
+            left: -8px;
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            z-index: 10;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(0.7, 0.7);
+        }
+
+        .resource-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+
+        .resource-value {
+            color: #4cd964;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 60px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4cd964;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Add window button */
+        .add-window-btn {
+            position: fixed;
+            top: 40px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .add-window-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900">
+    <!-- macOS Menu Bar -->
+    <div
+        class="w-full h-6 px-4 fixed top-0 flex flex-row justify-between items-center text-sm text-white bg-indigo-900 bg-opacity-25 blur shadow z-50">
+        <div class="flex flex-row items-center space-x-4">
+            <img id="apple" class="h-4 filter-invert" src="https://img.icons8.com/ios-filled/50/ffffff/mac-os.png"
+                alt="apple_icon">
+            <div id="finder" class="relative">
+                <span id="app_title" class="font-semibold cursor-pointer text-white" id="menuTitle">Finder</span>
+                <div id="finder-dropdown"
+                    class="hidden absolute top-full left-0 bg-white shadow-lg rounded-md min-w-[300px] z-10 border border-gray-200 text-black">
+                    <!-- Dropdown items will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-row justify-end items-center space-x-3">
+            <div class="inline-flex flex-row space-x-1 hover:bg-white hover:bg-opacity-20 rounded p-1">
+                <span class="text-xs">100%</span>
+                <img class="h-4 filter-invert" src="https://img.icons8.com/ios-filled/50/ffffff/full-battery.png"
+                    alt="battery">
+            </div>
+            <div class="inline-flex flex-row space-x-1 hover:bg-white hover:bg-opacity-20 rounded p-1">
+                <img class="h-4 filter-invert" src="https://img.icons8.com/ios-filled/50/ffffff/search.png"
+                    alt="search">
+            </div>
+            <div class="inline-flex flex-row space-x-1 hover:bg-white hover:bg-opacity-20 rounded p-1"
+                id="controlCenterBtn">
+                <img class="w-4 h-4 filter-invert" src="https://img.icons8.com/ios-filled/50/ffffff/settings.png"
+                    alt="control center">
+            </div>
+            <span id="time">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Resource Monitor -->
+    <div class="resource-monitor" id="resourceMonitor">
+        <div class="resource-item">
+            <span>Active Games:</span>
+            <span class="resource-value" id="activeGames">0</span>
+        </div>
+        <div class="resource-item">
+            <span>Memory Usage:</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="memoryBar" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="resource-item">
+            <span>Performance:</span>
+            <span class="resource-value" id="performanceStatus">Optimal</span>
+        </div>
+        <div class="resource-item">
+            <span>Focused:</span>
+            <span class="resource-value" id="focusedGame">None</span>
+        </div>
+    </div>
+
+    <!-- Add Window Button -->
+    <button class="add-window-btn" id="addWindowBtn">
+        <i class="fas fa-plus"></i> New Game
+    </button>
+
+    <!-- macOS Dock -->
+    <div class="fixed bottom-2 left-0 right-0 flex justify-center">
+        <ul class="osx-dock" id="macDock">
+            <!-- Dock items will be added dynamically -->
+        </ul>
+    </div>
+
+    <!-- Windows Container -->
+    <div id="windowsContainer"></div>
+
+    <script>
+
+        // Game URLs
+        const gameUrls = [
+            {
+                name: "MacOSX",
+                url: "https://cdn.sdappnet.cloud/rtx/macosx-apps.html",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png",
+                color: "#ff5f57",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png"
+            },
+            {
+                name: "Tomb Raider",
+                url: "https://igiteam.github.io/OpenLara/",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/tombraider.png",
+                color: "#ff5f57",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/tombraider.png"
+            },
+
+            {
+                name: "Half-Life",
+                url: "https://x8bitrain.github.io/webXash/",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/halflife.png",
+                color: "#4cd964",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/halflife.png"
+            },
+            {
+                name: "ReDriver 2",
+                url: "https://igiteam.github.io/opendriver2.github.io/webgame/",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/redriver.jpg",
+                color: "#007aff",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/redriver.jpg"
+            },
+            {
+                name: "QuakeJS",
+                url: "https://www.quakejs.com/",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/quake3favicon.png",
+                color: "#ff9500",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/quake3favicon.png"
+            },
+            {
+                name: "Project IGI",
+                url: "https://igiteam.github.io/ProjectIGI/?demo",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/igifav.png",
+                color: "#ff9500",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/igifav.png"
+            },
+            {
+                name: "The Thing",
+                url: "https://igiteam.github.io/TheThing/?demo",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/betateam.png",
+                color: "#ff9500",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/betateam.png"
+            },
+            {
+                name: "PS1",
+                url: "https://cdn.sdappnet.cloud/rtx/macosx_ps1.html",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/Playstation-Logo-Download.png",
+                color: "#ff9500",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/Playstation-Logo-Download.png"
+            },
+            {
+                name: "Mario 64",
+                url: "https://websim.com/@MrRobloxGuy/super-mario-64-web",
+                icon: "https://img.icons8.com/color/96/000000/super-mario.png",
+                color: "#ff2d55",
+                dockIcon: "https://img.icons8.com/color/96/000000/super-mario.png"
+            },
+            {
+                name: "GameboyAdvanced",
+                url: "https://igiteam.github.io/gba.js/",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/gbafavicon.png",
+                color: "#ff2d55",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/gbafavicon.png"
+            },
+            {
+                name: "MOHAA",
+                url: "https://ytembedxyz.netlify.app/?Ymd0UTVUQ25QWVk",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/MOHAA.png",
+                color: "#ff2d55",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/MOHAA.png"
+            },
+            {
+                name: "Doom 3",
+                url: "https://wasm.continuation-labs.com/d3demo/",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/doom3.jpg",
+                color: "#ff5f57",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/doom3.jpg"
+            },
+            {
+                name: "MacOSX Windows",
+                url: "https://cdn.sdappnet.cloud/rtx/macosx-apps_windows.html",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/windowsnt.png",
+                color: "#ff5f57",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/windowsnt.png"
+            },
+            {
+                name: "Webamp",
+                url: "https://webamp.org/",
+                icon: "https://cdn.sdappnet.cloud/rtx/images/webamp.png",
+                color: "#ff5f57",
+                dockIcon: "https://cdn.sdappnet.cloud/rtx/images/webamp.png"
+            },
+
+
+        ];
+        const apple_co = {
+            name: "Apple",
+            url: "https://cdn.sdappnet.cloud/rtx/images/apple-computer-co.jpg",
+            icon: "https://cdn.sdappnet.cloud/rtx/images/apple-computer-co.jpg",
+            color: "#ff5f57",
+            dockIcon: "https://cdn.sdappnet.cloud/rtx/images/apple-computer-co.jpg"
+        }
+
+        const appleBtn = document.getElementById('apple');
+        const app_titleBtn = document.getElementById('app_title');
+        const finder = document.getElementById('finder');
+        const dropdown = document.getElementById('finder-dropdown');
+
+
+        // Update time (from your code)
+        function updateTime() {
+            const now = new Date();
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const day = days[now.getDay()];
+            const month = months[now.getMonth()];
+            const dayNum = now.getDate();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            document.getElementById('time').textContent = `${day} ${dayNum} ${month} ${hours}:${minutes} ${ampm}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Window management
+        let windows = [];
+        let zIndexCounter = 100;
+        let focusedWindow = null;
+
+        // Initialize dock
+        function initializeDock() {
+            const dock = document.getElementById('macDock');
+            dock.innerHTML = '';
+
+            gameUrls.forEach((game, index) => {
+                const li = document.createElement('li');
+
+                const span = document.createElement('span');
+                span.className = "rounded-md";
+                span.textContent = game.name;
+
+                const img = document.createElement('img');
+                img.className = "w-12 h-12";
+                img.src = game.dockIcon;
+                img.alt = game.name;
+                img.title = game.name;
+
+                li.appendChild(span);
+                li.appendChild(img);
+
+                li.onclick = function () {
+                    createWindow(game);
+                };
+
+                dock.appendChild(li);
+            });
+
+            // Add mute all button
+            const muteLi = document.createElement('li');
+            const muteSpan = document.createElement('span');
+            muteSpan.textContent = "Mute All";
+            const muteImg = document.createElement('img');
+            muteImg.className = "w-12 h-12";
+            muteImg.src = "https://img.icons8.com/color/96/000000/mute.png";
+            muteImg.alt = "Mute All";
+            muteLi.appendChild(muteSpan);
+            muteLi.appendChild(muteImg);
+            muteLi.onclick = muteAllGames;
+            dock.appendChild(muteLi);
+        }
+
+        // Create a new window
+        function createWindow(gameConfig) {
+            const windowId = 'window-' + Date.now();
+            const windowWidth = 700;
+            const windowHeight = 500;
+
+            // Calculate staggered position
+            const offset = windows.length * 30;
+            const top = 40 + (offset % 300);
+            const left = 40 + (offset % 200);
+
+            const windowHtml = `
+                <div class="window" id="${windowId}" 
+                     style="top: ${top}px; left: ${left}px; width: ${windowWidth}px; height: ${windowHeight}px; z-index: ${zIndexCounter++}">
+                    <div class="window-header">
+                        <div class="traffic-lights">
+                            <div class="traffic-btn close-btn" data-action="close"></div>
+                            <div class="traffic-btn minimize-btn" data-action="minimize"></div>
+                            <div class="traffic-btn maximize-btn" data-action="maximize"></div>
+                        </div>
+                        <div class="window-title">
+                            <i class="${gameConfig.icon}" style="color: ${gameConfig.color}"></i>
+                            <span>${gameConfig.name}</span>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="iframe-container">
+                            <iframe 
+                                src="${gameConfig.url}" 
+                                title="${gameConfig.name}"
+                                allowfullscreen 
+                                allow="autoplay; gamepad"
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-pointer-lock"
+                                id="iframe-${windowId}"
+                            ></iframe>
+                            <div class="iframe-overlay" id="overlay-${windowId}"></div>
+                        </div>
+                    </div>
+                    <!-- NEW: Window Footer -->
+                    <div class="window-footer" id="footer-${windowId}">
+                        <button class="footer-control-btn mute" onclick="muteGameWindow('${windowId}')">
+                            <i class="fas fa-volume-mute"></i>
+                        </button>
+                        <button class="footer-control-btn focus" onclick="focusGameWindow('${windowId}')">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </button>
+                        <button class="footer-control-btn fullscreen" onclick="fullscreenGameWindow('${windowId}')">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <!-- Resize handles -->
+                    <div class="resize-handle resize-n"></div>
+                    <div class="resize-handle resize-s"></div>
+                    <div class="resize-handle resize-e"></div>
+                    <div class="resize-handle resize-w"></div>
+                    <div class="resize-handle resize-ne"></div>
+                    <div class="resize-handle resize-nw"></div>
+                    <div class="resize-handle resize-se"></div>
+                    <div class="resize-handle resize-sw"></div>
+                </div>
+            `;
+
+            document.getElementById('windowsContainer').insertAdjacentHTML('beforeend', windowHtml);
+
+            const windowElement = document.getElementById(windowId);
+            const iframe = document.getElementById(`iframe-${windowId}`);
+            const overlay = document.getElementById(`overlay-${windowId}`);
+
+            windows.push({
+                id: windowId,
+                element: windowElement,
+                iframe: iframe,
+                overlay: overlay,
+                config: gameConfig,
+                isMaximized: false,
+                isFocused: false,
+                isMuted: false,
+                originalPosition: { top, left, width: windowWidth, height: windowHeight }
+            });
+
+            // Make window draggable
+            makeDraggable(windowElement);
+
+            // Make window resizable
+            makeResizable(windowElement);
+
+            // Setup window controls
+            setupWindowControls(windowElement);
+
+            // Focus this window when created
+            focusGameWindow(windowId);
+
+            // Update menu bar title
+            document.getElementById('menuTitle').textContent = gameConfig.name;
+
+            updateResourceMonitor();
+
+            return windowId;
+        }
+
+        // Enhanced draggable function
+        function makeDraggable(windowElement) {
+            const header = windowElement.querySelector('.window-header');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            // Add double-click to maximize/restore
+            header.addEventListener('dblclick', (e) => {
+                // Prevent triggering on traffic buttons
+                if (e.target.classList.contains('traffic-btn')) return;
+
+                // Get window ID and toggle maximize
+                const windowId = windowElement.id;
+                toggleMaximizeWindow(windowId);
+                e.preventDefault();
+            });
+
+            header.addEventListener('mousedown', (e) => {
+                if (windowElement.classList.contains('maximized')) return;
+                if (e.target.classList.contains('traffic-btn')) return;
+
+                isDragging = true;
+                offsetX = e.clientX - windowElement.offsetLeft;
+                offsetY = e.clientY - windowElement.offsetTop;
+                focusGameWindow(windowElement.id);
+
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const x = e.clientX - offsetX;
+                const y = e.clientY - offsetY;
+
+                // Keep window within bounds
+                const maxX = window.innerWidth - windowElement.offsetWidth;
+                const maxY = window.innerHeight - 100;
+
+                windowElement.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+                windowElement.style.top = Math.max(30, Math.min(y, maxY)) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                document.body.style.userSelect = '';
+            });
+        }
+
+        // Enhanced resizable function
+        function makeResizable(windowElement) {
+            const resizeHandles = windowElement.querySelectorAll('.resize-handle');
+            let isResizing = false;
+            let handleDirection = '';
+            let startX, startY, startWidth, startHeight, startLeft, startTop;
+
+            resizeHandles.forEach(handle => {
+                handle.addEventListener('mousedown', (e) => {
+                    if (windowElement.classList.contains('maximized')) return;
+
+                    isResizing = true;
+                    handleDirection = handle.classList[1].replace('resize-', '');
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startWidth = parseInt(getComputedStyle(windowElement).width, 10);
+                    startHeight = parseInt(getComputedStyle(windowElement).height, 10);
+                    startLeft = windowElement.offsetLeft;
+                    startTop = windowElement.offsetTop;
+
+                    document.body.style.userSelect = 'none';
+                    e.preventDefault();
+                });
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+
+                let newWidth = startWidth;
+                let newHeight = startHeight;
+                let newLeft = startLeft;
+                let newTop = startTop;
+
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+
+                // Minimum sizes
+                const minWidth = 400;
+                const minHeight = 300;
+
+                switch (handleDirection) {
+                    case 'e': newWidth = Math.max(minWidth, startWidth + deltaX); break;
+                    case 'w': newWidth = Math.max(minWidth, startWidth - deltaX); newLeft = startLeft + deltaX; break;
+                    case 's': newHeight = Math.max(minHeight, startHeight + deltaY); break;
+                    case 'n': newHeight = Math.max(minHeight, startHeight - deltaY); newTop = startTop + deltaY; break;
+                    case 'se': newWidth = Math.max(minWidth, startWidth + deltaX); newHeight = Math.max(minHeight, startHeight + deltaY); break;
+                    case 'sw': newWidth = Math.max(minWidth, startWidth - deltaX); newHeight = Math.max(minHeight, startHeight + deltaY); newLeft = startLeft + deltaX; break;
+                    case 'ne': newWidth = Math.max(minWidth, startWidth + deltaX); newHeight = Math.max(minHeight, startHeight - deltaY); newTop = startTop + deltaY; break;
+                    case 'nw': newWidth = Math.max(minWidth, startWidth - deltaX); newHeight = Math.max(minHeight, startHeight - deltaY); newLeft = startLeft + deltaX; newTop = startTop + deltaY; break;
+                }
+
+                // Apply new size and position
+                windowElement.style.width = newWidth + 'px';
+                windowElement.style.height = newHeight + 'px';
+                windowElement.style.left = newLeft + 'px';
+                windowElement.style.top = newTop + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+                document.body.style.userSelect = '';
+            });
+        }
+
+        // Setup window controls
+        function setupWindowControls(windowElement) {
+            const controls = windowElement.querySelectorAll('.traffic-btn');
+
+            controls.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+
+                    const action = btn.getAttribute('data-action');
+                    const windowId = windowElement.id;
+
+                    switch (action) {
+                        case 'close':
+                            closeWindow(windowId);
+                            break;
+                        case 'minimize':
+                            minimizeWindow(windowId);
+                            break;
+                        case 'maximize':
+                            toggleMaximizeWindow(windowId);
+                            break;
+                    }
+                });
+            });
+        }
+
+        // Window management functions
+        function focusGameWindow(windowId) {
+            // Remove focus from all windows
+            windows.forEach(w => {
+                w.element.classList.remove('window-focused');
+                w.isFocused = false;
+
+                if (w.overlay) {
+                    w.overlay.classList.add('active');
+                }
+            });
+
+            // Focus the selected window
+            const window = windows.find(w => w.id === windowId);
+            if (window) {
+                window.element.classList.add('window-focused');
+                window.isFocused = true;
+                window.element.style.zIndex = zIndexCounter++;
+
+                if (window.overlay) {
+                    window.overlay.classList.remove('active');
+                }
+
+                focusedWindow = window;
+
+                // Update menu bar title
+                document.getElementById('menuTitle').textContent = window.config.name;
+
+                // Try to focus the iframe
+                try {
+                    window.iframe.focus();
+                } catch (e) {
+                    // Cross-origin restriction
+                }
+
+                updateResourceMonitor();
+            }
+        }
+
+        function closeWindow(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            if (window) {
+                window.element.remove();
+                windows = windows.filter(w => w.id !== windowId);
+
+                // If we closed the focused window, focus another one
+                if (focusedWindow && focusedWindow.id === windowId) {
+                    if (windows.length > 0) {
+                        focusGameWindow(windows[windows.length - 1].id);
+                    } else {
+                        document.getElementById('menuTitle').textContent = "Finder";
+                        focusedWindow = null;
+                    }
+                }
+
+                updateResourceMonitor();
+            }
+        }
+
+        function minimizeWindow(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            if (window) {
+                window.element.style.display = 'none';
+            }
+        }
+
+        function toggleMaximizeWindow(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            const windowElement = document.getElementById(windowId);
+
+            if (window.isMaximized) {
+                // Restore
+                windowElement.classList.remove('maximized');
+                windowElement.style.top = window.originalPosition.top + 'px';
+                windowElement.style.left = window.originalPosition.left + 'px';
+                windowElement.style.width = window.originalPosition.width + 'px';
+                windowElement.style.height = window.originalPosition.height + 'px';
+                window.isMaximized = false;
+            } else {
+                // Maximize
+                window.originalPosition = {
+                    top: windowElement.offsetTop,
+                    left: windowElement.offsetLeft,
+                    width: windowElement.offsetWidth,
+                    height: windowElement.offsetHeight
+                };
+                windowElement.classList.add('maximized');
+                window.isMaximized = true;
+            }
+        }
+
+        // Game control functions
+        function muteGameWindow(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            if (!window) return;
+
+            try {
+                window.iframe.contentWindow.postMessage({
+                    type: 'SET_MUTE',
+                    mute: true
+                }, '*');
+
+                window.iframe.setAttribute('muted', 'muted');
+                window.isMuted = true;
+
+                alert(`Attempted to mute ${window.config.name}. Use game's audio settings if needed.`);
+            } catch (e) {
+                showMuteInstructions(windowId);
+            }
+        }
+
+        function muteAllGames() {
+            windows.forEach(window => {
+                muteGameWindow(window.id);
+            });
+        }
+
+        function fullscreenGameWindow(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            if (!window) return;
+
+            if (window.iframe.requestFullscreen) {
+                window.iframe.requestFullscreen();
+            } else if (window.iframe.webkitRequestFullscreen) {
+                window.iframe.webkitRequestFullscreen();
+            } else if (window.iframe.msRequestFullscreen) {
+                window.iframe.msRequestFullscreen();
+            }
+        }
+
+        function showMuteInstructions(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            if (!window) return;
+
+            const instructions = `
+                <div style="
+                    position: absolute;
+                    top: 0; left: 0;
+                    width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.85);
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    text-align: center;
+                    padding: 30px;
+                    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                ">
+                    <i class="fas fa-volume-mute" style="font-size: 48px; margin-bottom: 20px; color: #ff5f57;"></i>
+                    <h3 style="font-size: 18px; margin-bottom: 10px; font-weight: 600;">Audio Control Required</h3>
+                    <p style="font-size: 14px; margin-bottom: 8px; opacity: 0.9;">Cross-origin security prevents direct audio control.</p>
+                    <p style="font-size: 14px; margin-bottom: 8px; opacity: 0.9;">Please use the game's own mute button or:</p>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 15px 0; text-align: left;">
+                        <p style="margin: 5px 0;">1. Click in the game window first</p>
+                        <p style="margin: 5px 0;">2. Press F11 for fullscreen mode</p>
+                        <p style="margin: 5px 0;">3. Use the game's audio settings</p>
+                    </div>
+                    <button onclick="this.parentElement.remove()" 
+                            style="margin-top: 20px; padding: 10px 24px; background: #007aff; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">
+                        Got it
+                    </button>
+                </div>
+            `;
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = instructions;
+            window.iframe.parentElement.appendChild(tempDiv.firstChild);
+        }
+
+        // Resource monitor updates
+        function updateResourceMonitor() {
+            document.getElementById('activeGames').textContent = windows.length;
+
+            // Calculate memory usage (estimate)
+            let estimatedMemory = 0;
+            windows.forEach(w => {
+                if (w.config.name.includes('Doom')) estimatedMemory += 850;
+                else if (w.config.name.includes('Half')) estimatedMemory += 500;
+                else estimatedMemory += 300;
+            });
+
+            // Update progress bar (0-4GB scale)
+            const memoryPercent = Math.min(100, (estimatedMemory / 4000) * 100);
+            document.getElementById('memoryBar').style.width = `${memoryPercent}%`;
+
+            // Update performance status
+            let performanceStatus = "Optimal";
+            if (windows.length >= 3) performanceStatus = "Good";
+            if (windows.length >= 4) performanceStatus = "Moderate";
+            if (windows.length >= 5) performanceStatus = "Heavy";
+            document.getElementById('performanceStatus').textContent = performanceStatus;
+
+            // Update focused game
+            document.getElementById('focusedGame').textContent = focusedWindow ? focusedWindow.config.name : "None";
+        }
+
+        // Event listeners
+        document.getElementById('addWindowBtn').addEventListener('click', () => {
+            const randomGame = gameUrls[Math.floor(Math.random() * gameUrls.length)];
+            createWindow(randomGame);
+        });
+
+        document.getElementById('controlCenterBtn').addEventListener('click', () => {
+            muteAllGames();
+        });
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeDock();
+            document.body.className = "w-screen h-screen overflow-hidden bg-center bg-cover";
+            document.body.style.backgroundImage = "url('https://cdn.sdappnet.cloud/rtx/images/bigsur.jpg')";
+            document.body.style.filter = "brightness(100%)";
+            // document.body.style.backgroundImage = "url('londonview.jpg')";
+            // Create initial windows
+            // createWindow(gameUrls[1]); // Half-Life
+            // createWindow(gameUrls[2]); // ReDriver
+            // createWindow(gameUrls[3]); // Quake3
+
+            updateResourceMonitor();
+        });
+
+        // Update resource monitor periodically
+        setInterval(updateResourceMonitor, 2000);
+    </script>
+    <script>
+
+        // Sample menu items - customize as needed
+        const finderMenuItems = [
+            { text: 'About Finder', action: () => console.log('About Finder') },
+            { text: 'Preferences...', action: () => console.log('Preferences') },
+            { separator: true },
+            { text: 'Empty Trash...', action: () => console.log('Empty Trash') },
+            { separator: true },
+            { text: 'Services', action: () => console.log('Services') },
+            { text: 'Hide Finder', action: () => console.log('Hide Finder') },
+            { text: 'Hide Others', action: () => console.log('Hide Others') },
+            { text: 'Show All', action: () => console.log('Show All') },
+            { separator: true },
+            { text: 'Quit Finder', action: () => console.log('Quit Finder') }
+        ];
+
+        // Create dropdown menu items
+        function createDropdownItems() {
+            dropdown.innerHTML = ''; // Clear existing items
+
+            finderMenuItems.forEach(item => {
+                if (item.separator) {
+                    const separator = document.createElement('hr');
+                    separator.className = 'border-gray-200 my-1';
+                    dropdown.appendChild(separator);
+                } else {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'px-4 py-2 hover:bg-blue-500 hover:text-white cursor-pointer transition-colors text-sm text-black';
+                    menuItem.textContent = item.text;
+                    menuItem.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent closing dropdown
+                        item.action();
+                        // Close dropdown after selection (optional)
+                        hideDropdown();
+                    });
+                    dropdown.appendChild(menuItem);
+                }
+            });
+        }
+
+        // Toggle dropdown visibility
+        function toggleDropdown() {
+            if (dropdown.classList.contains('hidden')) {
+                showDropdown();
+            } else {
+                hideDropdown();
+            }
+        }
+
+        function showDropdown() {
+            createDropdownItems();
+            dropdown.classList.remove('hidden');
+            // Add click outside to close
+            document.addEventListener('click', closeOnClickOutside);
+        }
+
+        function hideDropdown() {
+            dropdown.classList.add('hidden');
+            document.removeEventListener('click', closeOnClickOutside);
+        }
+
+        function closeOnClickOutside(event) {
+            if (!finder.contains(event.target)) {
+                hideDropdown();
+            }
+        }
+
+        // Event listeners
+        finder.addEventListener('click', (e) => {
+            // Only trigger if clicking on the finder div or its title
+            if (e.target === finder || e.target === app_titleBtn) {
+                toggleDropdown();
+                e.stopPropagation();
+            }
+        });
+
+        // Apple button click (if still needed)
+        appleBtn.addEventListener('click', () => {
+            // Your createWindow function
+            createWindow(apple_co);
+        });
+
+        // Create initial dropdown items
+        createDropdownItems();
+
+        // Optional: Add CSS for better styling
+        const style = document.createElement('style');
+        style.textContent = `
+    #finder {
+        cursor: default;
+        user-select: none;
+    }
+    #finder-dropdown {
+        max-height: 400px;
+        overflow-y: auto;
+        width: 300px;
+    }
+    #app_title {
+        pointer-events: auto; /* Changed to auto so clicks work */
+        color: white !important; /* Force white color for the title only */
+    }
+    
+    /* Ensure the title stays white even when dropdown is open */
+    #finder:hover #app_title,
+    #finder:active #app_title,
+    #finder:focus #app_title {
+        color: white !important;
+    }
+    
+    /* Make sure dropdown items are black by default */
+    #finder-dropdown,
+    #finder-dropdown *:not(hr) {
+        color: black;
+    }
+    
+    /* Specific styles for menu items */
+    #finder-dropdown > div {
+        color: black !important;
+    }
+`;
+        document.head.appendChild(style);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>macOS Clone</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .font-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                "Liberation Mono", "Courier New", monospace !important;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        .ccm {
+            grid-template-columns: repeat(4, 5rem);
+            grid-template-rows: repeat(5, 5rem);
+        }
+
+        .blur {
+            backdrop-filter: blur(48px);
+        }
+
+        .transition-hw {
+            transition-property: height, width;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 0.5s;
+        }
+
+        .filter-invert {
+            filter: invert();
+        }
+
+        .abcd {
+            height: calc(100% - 1.5rem);
+        }
+
+        /* slider */
+
+        .slider .rangeslider {
+            margin: 0 !important;
+            width: 100%;
+            height: 2rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 9999px;
+            box-shadow: none;
+        }
+
+        .slider .rangeslider .rangeslider__fill {
+            background-color: #fff;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .slider .rangeslider .rangeslider__handle {
+            background-color: #fff;
+            color: #fff;
+            box-shadow: -5px 0px 10px 0px rgba(17, 17, 17, 0.2);
+            border: none;
+            outline: none;
+        }
+
+        .slider .rangeslider .rangeslider__handle::after {
+            display: none;
+        }
+
+        ul.osx-dock li span {
+            background: rgba(0, 0, 0, 0.75);
+            font-size: 12px;
+            position: absolute;
+            bottom: 80px;
+            margin: 0 auto;
+            display: none;
+            padding: 3px 6px;
+            color: #fff;
+        }
+
+        ul.osx-dock li:hover span {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <noscript>
+        You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="root"></div>
+
+    <script>
+        // Apps data - from apps/AppStore.js
+        const apps = [
+            {
+                title: "Finder",
+                icon: "finder"
+            },
+            {
+                title: "Safari",
+                icon: "safari",
+                content: function () {
+                    return createSafari();
+                }
+            },
+            {
+                title: "Terminal",
+                icon: "terminal",
+                content: function () {
+                    return createTerminal();
+                }
+            },
+            {
+                title: "FaceTime",
+                icon: "facetime",
+                content: function () {
+                    return createFaceTime();
+                }
+            },
+            {
+                title: "TextEdit",
+                icon: "notes",
+                content: function () {
+                    return createTextEditor();
+                }
+            },
+            {
+                title: "Calculator",
+                icon: "calculator",
+                content: function () {
+                    return "App to be delivered soon";
+                }
+            },
+            {
+                title: "AppStore",
+                icon: "appstore",
+                content: function () {
+                    return "App to be delivered soon";
+                }
+            }
+        ];
+
+        // State
+        let state = {
+            logon: false,
+            showControlCenter: false,
+            currentApp: null,
+            playing: false,
+            bluetooth: true,
+            wifi: true,
+            volume: 75,
+            brightness: 100,
+            maxWindow: false,
+            terminalBuffer: [],
+            terminalInput: "",
+            safariUrl: "https://macosxjs.netlify.app/",
+            faceTimeClick: false,
+            faceTimeImgSrc: null,
+            bgblur: false,
+            date: new Date()
+        };
+
+        // FaceTime - from apps/FaceTime.js
+        function createFaceTime() {
+            const container = document.createElement('div');
+
+            if (state.faceTimeClick) {
+                container.id = "container";
+                container.className = "border-8 bg-gray-800 h-full flex space-y-6 flex-col justify-center items-center";
+
+                if (state.faceTimeImgSrc) {
+                    const img = document.createElement('img');
+                    img.className = "max-h-60 md:max-h-96";
+                    img.src = state.faceTimeImgSrc;
+                    img.alt = "yourimage";
+                    container.appendChild(img);
+                }
+
+                const button = document.createElement('button');
+                button.innerHTML = "<b>Retake</b>";
+                button.style.borderWidth = "1px";
+                button.style.borderColor = "rgba(0,0,0,0.5)";
+                button.style.alignItems = "center";
+                button.style.justifyContent = "center";
+                button.style.width = "75px";
+                button.style.height = "25px";
+                button.style.backgroundColor = "#fff";
+                button.style.borderRadius = "50px";
+                button.className = "mx-auto";
+                button.onclick = function () {
+                    state.faceTimeClick = false;
+                    render();
+                };
+                container.appendChild(button);
+            } else {
+                container.id = "container";
+                container.className = "bg-gray-800 h-full flex space-y-6 flex-col justify-center items-center";
+
+                const webcamPlaceholder = document.createElement('div');
+                webcamPlaceholder.className = "border-8 max-h-60 md:max-h-96";
+                webcamPlaceholder.textContent = "Webcam would be here";
+                webcamPlaceholder.style.backgroundColor = "#4B5563";
+                webcamPlaceholder.style.display = "flex";
+                webcamPlaceholder.style.alignItems = "center";
+                webcamPlaceholder.style.justifyContent = "center";
+                webcamPlaceholder.style.color = "white";
+                container.appendChild(webcamPlaceholder);
+
+                const button = document.createElement('button');
+                button.style.borderWidth = "1px";
+                button.style.borderColor = "rgba(0,0,0,0.5)";
+                button.style.alignItems = "center";
+                button.style.justifyContent = "center";
+                button.style.width = "50px";
+                button.style.height = "50px";
+                button.style.backgroundColor = "#fff";
+                button.style.borderRadius = "50px";
+                button.className = "mx-auto";
+                button.onclick = function () {
+                    state.faceTimeClick = true;
+                    state.faceTimeImgSrc = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDI1NiAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiBmaWxsPSIjNEM1NjYzIi8+CjxjaXJjbGUgY3g9IjEyOCIgY3k9IjEyOCIgcj0iNjQiIGZpbGw9IiM4QjlDQUIiLz4KPGNpcmNsZSBjeD0iMTI4IiBjeT0iMTA0IiByPSIyNCIgZmlsbD0iIzRDNTVBNSIvPgo8cGF0aCBkPSJNMTc2IDE2OEMxNzYgMTg0LjgzNyAxNTMuNjA3IDIwMCAxMjggMjAwQzEwMi4zOTMgMjAwIDgwIDE4NC44MzcgODAgMTY4IiBzdHJva2U9IiM0QzU1QTUiIHN0cm9rZS13aWR0aD0iMTYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K";
+                    render();
+                };
+                container.appendChild(button);
+            }
+
+            return container;
+        }
+
+        // Safari - from apps/Safari.js
+        function createSafari() {
+            const container = document.createElement('div');
+            container.className = "w-full h-full";
+
+            const urlBar = document.createElement('div');
+            urlBar.className = "h-8 flex justify-center items-center bg-gray-300";
+
+            const input = document.createElement('input');
+            input.type = "text";
+            input.value = state.safariUrl;
+            input.className = "h-6 w-4/5 p-2 rounded text-center font-semibold";
+            input.onchange = function (e) {
+                state.safariUrl = e.target.value;
+            };
+
+            const iframe = document.createElement('iframe');
+            iframe.title = "Safari clone browser";
+            iframe.src = state.safariUrl;
+            iframe.frameBorder = "0";
+            iframe.className = "h-full w-full";
+
+            urlBar.appendChild(input);
+            container.appendChild(urlBar);
+            container.appendChild(iframe);
+
+            return container;
+        }
+
+        // Terminal - from apps/Terminal.js
+        function createTerminal() {
+            const container = document.createElement('div');
+            container.className = "w-full h-full bg-black text-white";
+
+            const welcome = document.createElement('div');
+            welcome.className = "w-full h-max pt-2 px-1.5";
+
+            const span = document.createElement('span');
+            span.className = "text-green-300";
+            span.textContent = "ヽ(ˋ▽ˊ)ノ";
+
+            welcome.appendChild(span);
+            welcome.appendChild(document.createTextNode(": Hey, you found the terminal ! Type below to get started :"));
+
+            const bufferDiv = document.createElement('div');
+            state.terminalBuffer.forEach(t => {
+                const p = document.createElement('p');
+                p.className = "font-mono";
+                p.textContent = t;
+                bufferDiv.appendChild(p);
+            });
+
+            const input = document.createElement('input');
+            input.type = "text";
+            input.value = "$ " + state.terminalInput;
+            input.className = "w-full bg-black text-white font-mono";
+            input.onchange = function (e) {
+                state.terminalInput = e.target.value.substring(2);
+            };
+            input.onkeypress = function (e) {
+                const keyCode = e.which || e.keyCode;
+                var output = "Error: Check your syntax";
+                if (keyCode === 13) {
+                    try {
+                        output = eval(state.terminalInput);
+                    } catch (e) {
+                        if (e instanceof SyntaxError) {
+                            output = e.message;
+                        }
+                    }
+                    state.terminalBuffer.push("$ " + state.terminalInput);
+                    state.terminalBuffer.push("> " + output);
+                    state.terminalInput = "";
+                    render();
+                }
+            };
+
+            container.appendChild(welcome);
+            container.appendChild(bufferDiv);
+            container.appendChild(input);
+
+            return container;
+        }
+
+        // TextEditor - from apps/TextEditor.js
+        function createTextEditor() {
+            const contentValue = `
+   _          _ _
+  | |__   ___| | | ___
+  | '_ \\\\ / _ | | |/ _ \\\\
+  | | | |  __| | | (_) |
+  |_| |_|\\\\___|_|_|\\\\___/
+  
+                      _     _
+  __      _____  ____| | __| |
+  \\\\ \\\\ /\\\\ / / _ \\\\| ___| |/ _  |
+   \\\\ V  V | (_) | |  | | (_| |
+    \\\\_/\\\\_/ \\\\___/|_|  |_|\\\\____| `;
+
+            const container = document.createElement('div');
+            container.className = "w-full h-full bg-grey";
+
+            const textarea = document.createElement('textarea');
+            textarea.type = "text";
+            textarea.className = "h-full w-full font-mono";
+            textarea.textContent = contentValue;
+
+            container.appendChild(textarea);
+            return container;
+        }
+
+        // MenuBar - from components/MenuBar.js
+        function createMenuBar() {
+            const menuBar = document.createElement('div');
+            menuBar.className = "w-full h-6 px-4 fixed top-0 flex flex-row justify-between items-center text-sm text-white bg-indigo-900 bg-opacity-25 blur shadow transition";
+
+            const left = document.createElement('div');
+            left.className = "flex flex-row items-center space-x-4";
+
+            const appleImg = document.createElement('img');
+            appleImg.className = "h-4 filter-invert";
+            appleImg.src = "menuicons/Apple.png";
+            appleImg.alt = "apple_icon";
+
+            const titleSpan = document.createElement('span');
+            titleSpan.className = "font-semibold";
+            titleSpan.textContent = state.currentApp ? state.currentApp.title : "Finder";
+
+            const right = document.createElement('div');
+            right.className = "flex flex-row justify-end items-center space-x-2";
+
+            // Battery
+            const batteryItem = document.createElement('div');
+            batteryItem.className = "inline-flex flex-row space-x-1 hover:bg-white hover:bg-opacity-50 rounded p-1";
+
+            const batteryPercent = document.createElement('span');
+            batteryPercent.className = "text-xs";
+            batteryPercent.textContent = "100%";
+
+            const batteryImg = document.createElement('img');
+            batteryImg.className = "h-4 filter-invert";
+            batteryImg.src = "menuicons/battery.100.png";
+            batteryImg.alt = "battery";
+
+            // Search
+            const searchItem = document.createElement('div');
+            searchItem.className = "inline-flex flex-row space-x-1 hover:bg-white hover:bg-opacity-50 rounded p-1";
+
+            const searchImg = document.createElement('img');
+            searchImg.className = "h-4 filter-invert";
+            searchImg.src = "menuicons/magnifyingglass.png";
+            searchImg.alt = "search";
+
+            // Control Center
+            const controlItem = document.createElement('div');
+            controlItem.className = "inline-flex flex-row space-x-1 hover:bg-white hover:bg-opacity-50 rounded p-1";
+
+            const controlImg = document.createElement('img');
+            controlImg.className = "w-4 h-4 filter-invert";
+            controlImg.src = "menuicons/controlcenter.png";
+            controlImg.alt = "control center";
+            controlImg.onclick = function () {
+                state.showControlCenter = !state.showControlCenter;
+                render();
+            };
+
+            // Time
+            const timeSpan = document.createElement('span');
+            const formatDate = function (date) {
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const day = days[date.getDay()];
+                const month = months[date.getMonth()];
+                const dayNum = date.getDate();
+                let hours = date.getHours();
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'pm' : 'am';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                return `${day} ${dayNum} ${month} ${hours}:${minutes} ${ampm}`;
+            };
+            timeSpan.textContent = formatDate(state.date);
+
+            // Build structure
+            batteryItem.appendChild(batteryPercent);
+            batteryItem.appendChild(batteryImg);
+
+            searchItem.appendChild(searchImg);
+
+            controlItem.appendChild(controlImg);
+
+            right.appendChild(batteryItem);
+            right.appendChild(searchItem);
+            right.appendChild(controlItem);
+            right.appendChild(timeSpan);
+
+            left.appendChild(appleImg);
+            left.appendChild(titleSpan);
+
+            menuBar.appendChild(left);
+            menuBar.appendChild(right);
+
+            return menuBar;
+        }
+
+        // Dock - from components/Dock.js
+        function createDock() {
+            const dock = document.createElement('div');
+            dock.className = "dock w-full pb-2 fixed bottom-0";
+
+            const ul = document.createElement('ul');
+            ul.className = "osx-dock dock-item mx-auto w-max p-1 space-x-2 flex flex-row justify-center justify-between bg-white bg-opacity-25 blur rounded-2xl shadow-2xl";
+
+            apps.forEach(app => {
+                const li = document.createElement('li');
+
+                const span = document.createElement('span');
+                span.className = "rounded-md";
+                span.textContent = app.title;
+
+                const img = document.createElement('img');
+                img.className = "w-14";
+                img.src = `icons/${app.icon}.png`;
+                img.alt = app.title;
+                img.title = app.title;
+
+                li.appendChild(span);
+                li.appendChild(img);
+
+                li.onclick = function () {
+                    if (app.title !== "Finder") {
+                        state.currentApp = app;
+                        render();
+                    }
+                };
+
+                ul.appendChild(li);
+            });
+
+            dock.appendChild(ul);
+            return dock;
+        }
+
+        // WindowArea - from components/WindowArea.js
+        function createWindowArea() {
+            if (!state.currentApp) {
+                return document.createElement('div');
+            }
+
+            const size = state.maxWindow ? "w-5/6 h-5/6" : "h-3/4 w-7/12 mt-16 mb-24";
+
+            const windowDiv = document.createElement('div');
+            windowDiv.className = `transition-hw mt-6 mb-8 mx-auto rounded-lg bg-white ${size}`;
+
+            const header = document.createElement('div');
+            header.className = "relative h-6 text-center bg-gray-300 rounded-t-lg";
+
+            // Traffic lights
+            const trafficLights = document.createElement('div');
+            trafficLights.className = "flex flex-row absolute left-0 space-x-2 py-1 pl-2";
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = "w-4 h-4 rounded-full bg-red-500";
+            closeBtn.onclick = function () {
+                state.currentApp = null;
+                render();
+            };
+
+            const minimizeBtn = document.createElement('button');
+            minimizeBtn.className = "w-4 h-4 rounded-full bg-yellow-500";
+            minimizeBtn.onclick = function () {
+                state.maxWindow = false;
+                render();
+            };
+
+            const maximizeBtn = document.createElement('button');
+            maximizeBtn.className = "w-4 h-4 rounded-full bg-green-500";
+            maximizeBtn.onclick = function () {
+                state.maxWindow = !state.maxWindow;
+                render();
+            };
+
+            const titleSpan = document.createElement('span');
+            titleSpan.className = "font-semibold text-gray-700";
+            titleSpan.textContent = state.currentApp.title;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = "abcd w-full overflow-y-hidden";
+
+            if (state.currentApp.content) {
+                const content = state.currentApp.content();
+                if (typeof content === 'string') {
+                    contentDiv.textContent = content;
+                } else {
+                    contentDiv.appendChild(content);
+                }
+            } else {
+                contentDiv.textContent = `I'm ${state.currentApp.title} app`;
+            }
+
+            trafficLights.appendChild(closeBtn);
+            trafficLights.appendChild(minimizeBtn);
+            trafficLights.appendChild(maximizeBtn);
+
+            header.appendChild(trafficLights);
+            header.appendChild(titleSpan);
+
+            windowDiv.appendChild(header);
+            windowDiv.appendChild(contentDiv);
+
+            return windowDiv;
+        }
+
+        // Login - from components/Login.js
+        function createLogin() {
+            const Style1 = {
+                height: "100vh",
+                width: "100vw",
+                background: "url(abc.jpg) center/cover no-repeat"
+            };
+
+            const Style2 = {
+                height: "100vh",
+                width: "100vw",
+                background: "url(ls.jpg) center/cover no-repeat"
+            };
+
+            if (!state.bgblur) {
+                const div = document.createElement('div');
+                Object.assign(div.style, Style1);
+                div.onclick = function () {
+                    state.bgblur = true;
+                    render();
+                };
+                return div;
+            } else {
+                const container = document.createElement('div');
+                Object.assign(container.style, Style2);
+
+                const centerDiv = document.createElement('div');
+                centerDiv.style.display = "flex";
+                centerDiv.style.justifyContent = "center";
+                centerDiv.style.alignItems = "center";
+                centerDiv.style.height = "100vh";
+
+                const box = document.createElement('div');
+                box.className = "Box";
+                box.onclick = function () {
+                    state.logon = true;
+                    render();
+                };
+
+                const innerDiv = document.createElement('div');
+                innerDiv.className = "inline-block w-auto relative top-1/2 -mt-40";
+
+                // Avatar
+                const avatar = document.createElement('img');
+                avatar.className = "rounded-full w-24 h-24 my-0 mx-auto";
+                avatar.src = "profileimg.png";
+                avatar.alt = "img";
+
+                const username = document.createElement('div');
+                username.className = "font-semibold text-xl mt-2 ml-10 text-white";
+                username.textContent = "Macintosh";
+
+                // Password Input
+                const passwordDiv = document.createElement('div');
+                passwordDiv.className = "mx-auto grid grid-cols-5 w-44 h-8 mt-4 rounded-md bg-gray-300 blur bg-opacity-50";
+
+                const passwordInput = document.createElement('input');
+                passwordInput.className = "text-sm col-start-1 col-span-4 outline-none focus:outline-none px-2";
+                passwordInput.type = "password";
+                passwordInput.placeholder = "Enter Password";
+                passwordInput.onclick = function (e) {
+                    e.stopPropagation();
+                };
+
+                const arrowDiv = document.createElement('div');
+                arrowDiv.className = "col-start-5 col-span-1 flex justify-center items-center";
+
+                const arrowIcon = document.createElement('div');
+                arrowIcon.textContent = "→";
+                arrowIcon.style.color = "white";
+                arrowIcon.style.marginLeft = "4px";
+
+                const hint = document.createElement('div');
+                hint.className = "nightwind-prevent text-sm mt-2 ml-10 text-gray-200";
+                hint.textContent = "Click to enter";
+
+                // Footer buttons
+                const footer = document.createElement('div');
+                footer.className = "nightwind-prevent-block text-sm fixed bottom-16 left-0 right-0 mx-auto flex flex-row space-x-4 w-max";
+
+                const sleepBtn = createLoginButton("Sleep", "💤");
+                const restartBtn = createLoginButton("Restart", "↻");
+                const shutdownBtn = createLoginButton("Shut Down", "⏻");
+
+                restartBtn.onclick = function (e) {
+                    e.stopPropagation();
+                    state.bgblur = false;
+                    render();
+                };
+
+                // Build structure
+                arrowDiv.appendChild(arrowIcon);
+                passwordDiv.appendChild(passwordInput);
+                passwordDiv.appendChild(arrowDiv);
+
+                innerDiv.appendChild(avatar);
+                innerDiv.appendChild(username);
+                innerDiv.appendChild(passwordDiv);
+                innerDiv.appendChild(hint);
+
+                box.appendChild(innerDiv);
+                centerDiv.appendChild(box);
+
+                footer.appendChild(sleepBtn);
+                footer.appendChild(restartBtn);
+                footer.appendChild(shutdownBtn);
+
+                container.appendChild(centerDiv);
+                container.appendChild(footer);
+
+                return container;
+            }
+        }
+
+        function createLoginButton(text, icon) {
+            const container = document.createElement('div');
+            container.className = "flex flex-col items-center text-white w-24";
+
+            const iconDiv = document.createElement('div');
+            iconDiv.className = "h-10 w-10 bg-gray-700 rounded-full inline-flex justify-center items-center";
+            iconDiv.textContent = icon;
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+
+            container.appendChild(iconDiv);
+            container.appendChild(textSpan);
+
+            return container;
+        }
+
+        // Desktop - from components/Desktop.js
+        function createDesktop() {
+            const desktop = document.createElement('div');
+            desktop.className = "w-screen h-screen overflow-hidden bg-center bg-cover";
+            desktop.style.backgroundImage = "url(londonview.jpg)";
+            desktop.style.filter = `brightness(${state.brightness}%)`;
+
+            const menuBar = createMenuBar();
+            const windowArea = createWindowArea();
+            const dock = createDock();
+
+            desktop.appendChild(menuBar);
+            desktop.appendChild(windowArea);
+            desktop.appendChild(dock);
+
+            return desktop;
+        }
+
+        // Main render function
+        function render() {
+            const root = document.getElementById('root');
+            root.innerHTML = '';
+
+            if (!state.logon) {
+                root.appendChild(createLogin());
+            } else {
+                root.appendChild(createDesktop());
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            // Update time every minute
+            setInterval(function () {
+                state.date = new Date();
+                render();
+            }, 60000);
+
+            render();
+        });
+    </script>
+</body>
+
+</html>
