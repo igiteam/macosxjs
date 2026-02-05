@@ -98,20 +98,6 @@
       "icon": "https://cdn.sdappnet.cloud/rtx/images/webamp.png",
       "color": "#ff5f57",
       "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/webamp.png"
-    },
-    {
-      "name": "Wine MacOSX",
-      "url": "https://cdn.sdappnet.cloud/rtx/macosx_wine.html",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/wine_wineskin.png",
-      "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/wine_wineskin.png"
-    },    
-    {
-      "name": "Bytestash",
-      "url": "https://bytestash.sdappnet.cloud/",
-      "icon": "https://raw.githubusercontent.com/jordan-dalby/ByteStash/refs/heads/main/client/public/logo192.png",
-      "color": "#ff5f57",
-      "dockIcon": "https://raw.githubusercontent.com/jordan-dalby/ByteStash/refs/heads/main/client/public/logo192.png"
     }
   ]
 }
