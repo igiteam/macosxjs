@@ -478,9 +478,27 @@
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
 
+        /* Add this to your existing CSS */
+        #apple {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1000000 !important;
+        }
+
         #finder {
-            z-index: 2147483647 !important;
-            /* MAXIMUM Z-INDEX */
+            position: relative;
+            z-index: 1000000 !important;
+        }
+
+        /* Ensure the Apple icon container doesn't block clicks */
+        .flex.flex-row.items-center.space-x-4 {
+            position: relative;
+            z-index: 1000000;
+        }
+
+        /* Make sure the menu bar items have proper stacking */
+        .w-full.h-6.px-4.fixed.top-0.flex {
+            z-index: 1000000 !important;
         }
 
         /* Ensure finder dropdown appears above everything */
@@ -674,16 +692,35 @@
         // Event listeners
         finder.addEventListener('click', (e) => {
             // Only trigger if clicking on the finder div or its title
-            if (e.target === finder || e.target === app_titleBtn) {
+            // BUT NOT the Apple icon
+            if (e.target === finder || e.target === app_titleBtn || e.target.closest('#app_title')) {
                 toggleDropdown();
                 e.stopPropagation();
             }
         });
 
-        // Apple button click (if still needed)
-        appleBtn.addEventListener('click', () => {
+        // Apple button click - Make sure this works independently
+        appleBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event from bubbling up
+            e.preventDefault(); // Prevent any default behavior
+
             // Your createWindow function
             createWindow(apple_co);
+
+            // Also hide dropdown if it's open
+            hideDropdown();
+        });
+
+        // Also add a specific click handler for just the app_title span
+        document.getElementById('app_title').addEventListener('click', (e) => {
+            toggleDropdown();
+            e.stopPropagation();
+        });
+
+        // Make sure the Apple icon isn't affected by the finder click
+        document.getElementById('apple').addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Don't let this trigger the finder dropdown
         });
 
         // Create initial dropdown items
