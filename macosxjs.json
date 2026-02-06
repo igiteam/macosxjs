@@ -72,6 +72,13 @@
       "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/gbafavicon.png"
     },
     {
+      "name": "Nintendo64",
+      "url": "https://igiteam.github.io/Nintendo64/?demo",
+      "icon": "https://cdn.sdappnet.cloud/rtx/images/n64.png",
+      "color": "#ff2d55",
+      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/n64.png"
+    },
+    {
       "name": "MOHAA",
       "url": "https://ytembedxyz.netlify.app/?Ymd0UTVUQ25QWVk",
       "icon": "https://cdn.sdappnet.cloud/rtx/images/MOHAA.png",
@@ -112,6 +119,20 @@
       "icon": "https://raw.githubusercontent.com/jordan-dalby/ByteStash/refs/heads/main/client/public/logo192.png",
       "color": "#ff5f57",
       "dockIcon": "https://raw.githubusercontent.com/jordan-dalby/ByteStash/refs/heads/main/client/public/logo192.png"
+    },
+    {
+      "name": "Macintosh Repository",
+      "url": "https://www.macintoshrepository.org/",
+      "icon": "https://www.macintoshrepository.org/img/logo.png",
+      "color": "#ff5f57",
+      "dockIcon": "https://www.macintoshrepository.org/img/logo.png"
+    },
+    {
+      "name": "Wii & Gamecube",
+      "url": "https://cdn.sdappnet.cloud/rtx/build-mac-mini-2012-server-wii-gamecube-emulator.html",
+      "icon": "https://cdn.sdappnet.cloud/rtx/images/wiimote_cursor_.png",
+      "color": "#ff5f57",
+      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/wiimote_cursor_.png"
     }
   ]
 }
