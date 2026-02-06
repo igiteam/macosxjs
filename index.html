@@ -997,12 +997,12 @@
         }
 
         function openNewTab(windowId) {
-            const window = windows.find(w => w.id === windowId);
-            if (!window) return;
+            const windowObj = windows.find(w => w.id === windowId);
+            if (!windowObj) return;
 
             try {
-                // Get the URL from the focused window
-                const url = window.url;
+                // Get the URL from the window's config
+                const url = windowObj.config.url;
 
                 if (!url) {
                     alert('No URL found in the active window.');
@@ -1013,6 +1013,7 @@
                 window.open(url, '_blank');
             } catch (error) {
                 console.error('Error opening in new tab:', error);
+                alert('Failed to open in new tab. Please try again.');
             }
         }
 
