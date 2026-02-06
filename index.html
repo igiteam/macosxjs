@@ -896,7 +896,7 @@
                 focusedWindow = window;
 
                 // Update menu bar title
-                document.getElementById('menuTitle').textContent = window.config.name;
+                document.getElementById('app_title').textContent = window.config.name;
 
                 // Try to focus the iframe
                 try {
@@ -920,7 +920,7 @@
                     if (windows.length > 0) {
                         focusGameWindow(windows[windows.length - 1].id);
                     } else {
-                        document.getElementById('menuTitle').textContent = "Finder";
+                        document.getElementById('app_title').textContent = "Finder";
                         focusedWindow = null;
                     }
                 }
