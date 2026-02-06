@@ -523,10 +523,13 @@
         }
 
         #finder-dropdown {
-            position: absolute !important;
-            top: 100% !important;
-            left: 0 !important;
-            margin-top: 5px !important;
+            position: fixed !important;
+            /* Changed from absolute to fixed */
+            top: 24px !important;
+            /* Height of menu bar */
+            left: 40px !important;
+            /* Position of Finder menu */
+            margin-top: 0 !important;
             z-index: 2147483647 !important;
             max-height: 400px;
             overflow-y: auto;
