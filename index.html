@@ -2025,10 +2025,84 @@
                     });
                 }
 
+                // Add "Open in New Tab" feature
+                addOpenInNewTabMenuItem();
+
                 // Recreate dropdown items
                 if (typeof createDropdownItems === 'function') {
                     createDropdownItems();
                 }
+            }
+        }
+
+
+        // Function to add "Open in New Tab" menu item
+        function addOpenInNewTabMenuItem() {
+            // Check if "Open in New Tab" already exists
+            const openInNewTabIndex = finderMenuItems.findIndex(item => item.text === 'Open in New Tab');
+
+            if (openInNewTabIndex === -1) {
+                // Find the "Quit All Windows" item
+                const quitAllIndex = finderMenuItems.findIndex(item => item.text === 'Quit All Windows');
+
+                if (quitAllIndex !== -1) {
+                    // Insert "Open in New Tab" before "Quit All Windows"
+                    finderMenuItems.splice(quitAllIndex, 0, {
+                        text: 'Open in New Tab',
+                        shortcut: '⌘T',
+                        action: () => {
+                            openActiveWindowInNewTab();
+                            hideDropdown();
+                        }
+                    });
+
+                    // Add separator before it
+                    finderMenuItems.splice(quitAllIndex, 0, { separator: true });
+                } else {
+                    // If "Quit All Windows" not found, add to the end before the last separator
+                    finderMenuItems.splice(finderMenuItems.length - 2, 0, {
+                        text: 'Open in New Tab',
+                        shortcut: '⌘T',
+                        action: () => {
+                            openActiveWindowInNewTab();
+                            hideDropdown();
+                        }
+                    });
+                    finderMenuItems.splice(finderMenuItems.length - 3, 0, { separator: true });
+                }
+            } else {
+                // Update existing "Open in New Tab" action
+                finderMenuItems[openInNewTabIndex].action = () => {
+                    openActiveWindowInNewTab();
+                    hideDropdown();
+                };
+            }
+        }
+
+        // Function to open the active window's URL in a new browser tab
+        function openActiveWindowInNewTab() {
+            if (!focusedWindow) {
+                alert('No active window selected. Please select a window first.');
+                return;
+            }
+
+            try {
+                // Get the URL from the focused window
+                const url = focusedWindow.config.url;
+
+                if (!url) {
+                    alert('No URL found in the active window.');
+                    return;
+                }
+
+                // Open in new tab
+                window.open(url, '_blank');
+
+                // Show a brief notification
+                showOpenInNewTabNotification(focusedWindow.config.name, url);
+            } catch (error) {
+                console.error('Error opening in new tab:', error);
+                alert('Failed to open in new tab. Please try again.');
             }
         }
 
