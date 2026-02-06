@@ -582,8 +582,270 @@
     <!-- Windows Container -->
     <div id="windowsContainer"></div>
 
+    <!-- Finder Dropdown -->
     <script>
-        let gameUrls = [];
+        var data;
+        // Finder menu items - Updated with Quit All function
+        const finderMenuItems = [
+            { text: 'About Finder', action: () => console.log('About Finder') },
+            { text: 'Preferences...', shortcut: '⌘,', action: () => console.log('Preferences') },
+            { separator: true },
+            { text: 'Fork...', action: () => window.open('https://github.com/igiteam/macosxjs', '_blank') },
+            { separator: true },
+            { text: 'Hide Finder', shortcut: '⌘H', action: () => console.log('Hide Finder') },
+            { text: 'Hide Others', shortcut: '⌘⌥H', action: () => console.log('Hide Others') },
+            { text: 'Show All', action: () => console.log('Show All') },
+            { separator: true },
+            {
+                text: 'Quit All Windows',
+                shortcut: '⌘Q',
+                action: () => {
+                    quitAllWindows();
+                    hideDropdown();
+                }
+            },
+            {
+                text: 'Quit Finder',
+                shortcut: '⌘⌥Q',
+                action: () => console.log('Quit Finder')
+            }
+        ];
+        // Create dropdown menu items
+        function createDropdownItems() {
+            dropdown.innerHTML = ''; // Clear existing items
+
+            finderMenuItems.forEach(item => {
+                if (item.separator) {
+                    const separator = document.createElement('hr');
+                    separator.className = 'border-gray-200 my-1';
+                    dropdown.appendChild(separator);
+                } else {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'px-4 py-2 hover:bg-blue-500 hover:text-white cursor-pointer transition-colors text-sm text-black';
+                    menuItem.textContent = item.text;
+                    menuItem.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent closing dropdown
+                        item.action();
+                        // Close dropdown after selection (optional)
+                        hideDropdown();
+                    });
+                    dropdown.appendChild(menuItem);
+                }
+            });
+        }
+
+        // Toggle dropdown visibility
+        function toggleDropdown() {
+            if (dropdown.classList.contains('hidden')) {
+                showDropdown();
+            } else {
+                hideDropdown();
+            }
+        }
+
+        function showDropdown() {
+            createDropdownItems();
+            dropdown.classList.remove('hidden');
+
+            // Position the dropdown below the finder menu
+            const finderRect = finder.getBoundingClientRect();
+            dropdown.style.top = `${finderRect.bottom}px`;
+            dropdown.style.left = `${finderRect.left}px`;
+
+            // Force the dropdown to have maximum z-index
+            dropdown.style.zIndex = '1000000';
+
+            // Add click outside to close
+            document.addEventListener('click', closeOnClickOutside);
+        }
+
+        function hideDropdown() {
+            dropdown.classList.add('hidden');
+            document.removeEventListener('click', closeOnClickOutside);
+        }
+
+        function closeOnClickOutside(event) {
+            if (!finder.contains(event.target)) {
+                hideDropdown();
+            }
+        }
+
+        // Event listeners
+        finder.addEventListener('click', (e) => {
+            // Only trigger if clicking on the finder div or its title
+            if (e.target === finder || e.target === app_titleBtn) {
+                toggleDropdown();
+                e.stopPropagation();
+            }
+        });
+
+        // Apple button click (if still needed)
+        appleBtn.addEventListener('click', () => {
+            // Your createWindow function
+            createWindow(apple_co);
+        });
+
+        // Create initial dropdown items
+        createDropdownItems();
+
+        // Optional: Add CSS for better styling
+        const style = document.createElement('style');
+        style.textContent = `
+            #finder {
+                cursor: default;
+                user-select: none;
+            }
+            #finder-dropdown {
+                max-height: 400px;
+                overflow-y: auto;
+                width: 300px;
+            }
+            #app_title {
+                pointer-events: auto; /* Changed to auto so clicks work */
+                color: white !important; /* Force white color for the title only */
+            }
+            
+            /* Ensure the title stays white even when dropdown is open */
+            #finder:hover #app_title,
+            #finder:active #app_title,
+            #finder:focus #app_title {
+                color: white !important;
+            }
+            
+            /* Make sure dropdown items are black by default */
+            #finder-dropdown,
+            #finder-dropdown *:not(hr) {
+                color: black;
+            }
+            
+            /* Specific styles for menu items */
+            #finder-dropdown > div {
+                color: black !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // =============================================
+        // Update Finder Menu
+        // =============================================
+
+        // Update the finder menu items to include the duplicate feature
+        function updateFinderMenu() {
+            // Find Duplicate... menu item or add it
+            const duplicateIndex = finderMenuItems.findIndex(item => item.text === 'Duplicate...');
+
+            if (duplicateIndex !== -1) {
+                // Update existing duplicate action
+                finderMenuItems[duplicateIndex].action = () => {
+                    showDuplicateModal();
+                    hideDropdown();
+                };
+            } else {
+                // Add duplicate item after Preferences
+                const preferencesIndex = finderMenuItems.findIndex(item => item.text === 'Preferences...');
+                if (preferencesIndex !== -1) {
+                    finderMenuItems.splice(preferencesIndex + 1, 0, {
+                        separator: true
+                    });
+                    finderMenuItems.splice(preferencesIndex + 2, 0, {
+                        text: 'Duplicate MacOSXJS...',
+                        action: () => {
+                            showDuplicateModal();
+                            hideDropdown();
+                        }
+                    });
+                } else {
+                    // Add at position 3 if Preferences not found
+                    finderMenuItems.splice(3, 0, {
+                        text: 'Duplicate MacOSXJS...',
+                        action: () => {
+                            showDuplicateModal();
+                            hideDropdown();
+                        }
+                    });
+                }
+
+                // Add "Open in New Tab" feature
+                addOpenInNewTabMenuItem();
+
+                // Recreate dropdown items
+                if (typeof createDropdownItems === 'function') {
+                    createDropdownItems();
+                }
+            }
+        }
+
+
+        // Function to add "Open in New Tab" menu item
+        function addOpenInNewTabMenuItem() {
+            // Check if "Open in New Tab" already exists
+            const openInNewTabIndex = finderMenuItems.findIndex(item => item.text === 'Open in New Tab');
+
+            if (openInNewTabIndex === -1) {
+                // Find the "Quit All Windows" item
+                const quitAllIndex = finderMenuItems.findIndex(item => item.text === 'Preferences...');
+
+                if (quitAllIndex !== -1) {
+                    // Insert "Open in New Tab" before "Quit All Windows"
+                    finderMenuItems.splice(quitAllIndex, 0, {
+                        text: 'Open in New Tab',
+                        shortcut: '⌘T',
+                        action: () => {
+                            openActiveWindowInNewTab();
+                            hideDropdown();
+                        }
+                    });
+
+                    // Add separator before it
+                    finderMenuItems.splice(quitAllIndex, 0, { separator: true });
+                } else {
+                    // If "Quit All Windows" not found, add to the end before the last separator
+                    finderMenuItems.splice(finderMenuItems.length - 2, 0, {
+                        text: 'Open in New Tab',
+                        shortcut: '⌘T',
+                        action: () => {
+                            openActiveWindowInNewTab();
+                            hideDropdown();
+                        }
+                    });
+                    finderMenuItems.splice(finderMenuItems.length - 3, 0, { separator: true });
+                }
+            } else {
+                // Update existing "Open in New Tab" action
+                finderMenuItems[openInNewTabIndex].action = () => {
+                    openActiveWindowInNewTab();
+                    hideDropdown();
+                };
+            }
+        }
+
+        // Function to open the active window's URL in a new browser tab
+        function openActiveWindowInNewTab() {
+            if (!focusedWindow) {
+                alert('No active window selected. Please select a window first.');
+                return;
+            }
+
+            try {
+                // Get the URL from the focused window
+                const url = focusedWindow.config.url;
+
+                if (!url) {
+                    alert('No URL found in the active window.');
+                    return;
+                }
+
+                // Open in new tab
+                window.open(url, '_blank');
+            } catch (error) {
+                console.error('Error opening in new tab:', error);
+            }
+        }
+
+    </script>
+
+    <!-- Windows -->
+    <script>
         const apple_co = {
             name: "Apple",
             url: "https://cdn.sdappnet.cloud/rtx/images/apple-computer-co.jpg",
@@ -591,6 +853,14 @@
             color: "#ff5f57",
             dockIcon: "https://cdn.sdappnet.cloud/rtx/images/apple-computer-co.jpg"
         }
+        const macosx_js = {
+            name: "About MacOSXJS",
+            url: "https://cdn.sdappnet.cloud/rtx/images/apple-computer-co.jpg",
+            icon: "https://cdn.sdappnet.cloud/rtx/images/macosxjs.png",
+            color: "#ff5f57",
+            dockIcon: "https://cdn.sdappnet.cloud/rtx/images/macosxjs.png"
+        }
+        let gameUrls = [];
 
         const appleBtn = document.getElementById('apple');
         const app_titleBtn = document.getElementById('app_title');
@@ -1152,148 +1422,8 @@
         // Update resource monitor periodically
         setInterval(updateResourceMonitor, 2000);
     </script>
-    <script>
-        var data;
-        // Finder menu items - Updated with Quit All function
-        const finderMenuItems = [
-            { text: 'About Finder', action: () => console.log('About Finder') },
-            { text: 'Preferences...', shortcut: '⌘,', action: () => console.log('Preferences') },
-            { separator: true },
-            { text: 'Fork...', action: () => window.open('https://github.com/igiteam/macosxjs', '_blank') },
-            { separator: true },
-            { text: 'Hide Finder', shortcut: '⌘H', action: () => console.log('Hide Finder') },
-            { text: 'Hide Others', shortcut: '⌘⌥H', action: () => console.log('Hide Others') },
-            { text: 'Show All', action: () => console.log('Show All') },
-            { separator: true },
-            {
-                text: 'Quit All Windows',
-                shortcut: '⌘Q',
-                action: () => {
-                    quitAllWindows();
-                    hideDropdown();
-                }
-            },
-            {
-                text: 'Quit Finder',
-                shortcut: '⌘⌥Q',
-                action: () => console.log('Quit Finder')
-            }
-        ];
-        // Create dropdown menu items
-        function createDropdownItems() {
-            dropdown.innerHTML = ''; // Clear existing items
 
-            finderMenuItems.forEach(item => {
-                if (item.separator) {
-                    const separator = document.createElement('hr');
-                    separator.className = 'border-gray-200 my-1';
-                    dropdown.appendChild(separator);
-                } else {
-                    const menuItem = document.createElement('div');
-                    menuItem.className = 'px-4 py-2 hover:bg-blue-500 hover:text-white cursor-pointer transition-colors text-sm text-black';
-                    menuItem.textContent = item.text;
-                    menuItem.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent closing dropdown
-                        item.action();
-                        // Close dropdown after selection (optional)
-                        hideDropdown();
-                    });
-                    dropdown.appendChild(menuItem);
-                }
-            });
-        }
-
-        // Toggle dropdown visibility
-        function toggleDropdown() {
-            if (dropdown.classList.contains('hidden')) {
-                showDropdown();
-            } else {
-                hideDropdown();
-            }
-        }
-
-        function showDropdown() {
-            createDropdownItems();
-            dropdown.classList.remove('hidden');
-
-            // Position the dropdown below the finder menu
-            const finderRect = finder.getBoundingClientRect();
-            dropdown.style.top = `${finderRect.bottom}px`;
-            dropdown.style.left = `${finderRect.left}px`;
-
-            // Force the dropdown to have maximum z-index
-            dropdown.style.zIndex = '1000000';
-
-            // Add click outside to close
-            document.addEventListener('click', closeOnClickOutside);
-        }
-
-        function hideDropdown() {
-            dropdown.classList.add('hidden');
-            document.removeEventListener('click', closeOnClickOutside);
-        }
-
-        function closeOnClickOutside(event) {
-            if (!finder.contains(event.target)) {
-                hideDropdown();
-            }
-        }
-
-        // Event listeners
-        finder.addEventListener('click', (e) => {
-            // Only trigger if clicking on the finder div or its title
-            if (e.target === finder || e.target === app_titleBtn) {
-                toggleDropdown();
-                e.stopPropagation();
-            }
-        });
-
-        // Apple button click (if still needed)
-        appleBtn.addEventListener('click', () => {
-            // Your createWindow function
-            createWindow(apple_co);
-        });
-
-        // Create initial dropdown items
-        createDropdownItems();
-
-        // Optional: Add CSS for better styling
-        const style = document.createElement('style');
-        style.textContent = `
-    #finder {
-        cursor: default;
-        user-select: none;
-    }
-    #finder-dropdown {
-        max-height: 400px;
-        overflow-y: auto;
-        width: 300px;
-    }
-    #app_title {
-        pointer-events: auto; /* Changed to auto so clicks work */
-        color: white !important; /* Force white color for the title only */
-    }
-    
-    /* Ensure the title stays white even when dropdown is open */
-    #finder:hover #app_title,
-    #finder:active #app_title,
-    #finder:focus #app_title {
-        color: white !important;
-    }
-    
-    /* Make sure dropdown items are black by default */
-    #finder-dropdown,
-    #finder-dropdown *:not(hr) {
-        color: black;
-    }
-    
-    /* Specific styles for menu items */
-    #finder-dropdown > div {
-        color: black !important;
-    }
-`;
-        document.head.appendChild(style);
-    </script>
+    <!-- Load Data -->
     <script>
         // Function to load games from GitHub
         async function loadGamesFromGitHub() {
@@ -1346,6 +1476,8 @@
             });
         });
     </script>
+
+    <!-- Duplicate MacOSXJS -->
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1492.0.min.js"></script>
     <script>
         // =============================================
@@ -2045,122 +2177,6 @@
             }, 3000);
         }
 
-        // =============================================
-        // Update Finder Menu
-        // =============================================
-
-        // Update the finder menu items to include the duplicate feature
-        function updateFinderMenu() {
-            // Find Duplicate... menu item or add it
-            const duplicateIndex = finderMenuItems.findIndex(item => item.text === 'Duplicate...');
-
-            if (duplicateIndex !== -1) {
-                // Update existing duplicate action
-                finderMenuItems[duplicateIndex].action = () => {
-                    showDuplicateModal();
-                    hideDropdown();
-                };
-            } else {
-                // Add duplicate item after Preferences
-                const preferencesIndex = finderMenuItems.findIndex(item => item.text === 'Preferences...');
-                if (preferencesIndex !== -1) {
-                    finderMenuItems.splice(preferencesIndex + 1, 0, {
-                        separator: true
-                    });
-                    finderMenuItems.splice(preferencesIndex + 2, 0, {
-                        text: 'Duplicate MacOSXJS...',
-                        action: () => {
-                            showDuplicateModal();
-                            hideDropdown();
-                        }
-                    });
-                } else {
-                    // Add at position 3 if Preferences not found
-                    finderMenuItems.splice(3, 0, {
-                        text: 'Duplicate MacOSXJS...',
-                        action: () => {
-                            showDuplicateModal();
-                            hideDropdown();
-                        }
-                    });
-                }
-
-                // Add "Open in New Tab" feature
-                addOpenInNewTabMenuItem();
-
-                // Recreate dropdown items
-                if (typeof createDropdownItems === 'function') {
-                    createDropdownItems();
-                }
-            }
-        }
-
-
-        // Function to add "Open in New Tab" menu item
-        function addOpenInNewTabMenuItem() {
-            // Check if "Open in New Tab" already exists
-            const openInNewTabIndex = finderMenuItems.findIndex(item => item.text === 'Open in New Tab');
-
-            if (openInNewTabIndex === -1) {
-                // Find the "Quit All Windows" item
-                const quitAllIndex = finderMenuItems.findIndex(item => item.text === 'Preferences...');
-
-                if (quitAllIndex !== -1) {
-                    // Insert "Open in New Tab" before "Quit All Windows"
-                    finderMenuItems.splice(quitAllIndex, 0, {
-                        text: 'Open in New Tab',
-                        shortcut: '⌘T',
-                        action: () => {
-                            openActiveWindowInNewTab();
-                            hideDropdown();
-                        }
-                    });
-
-                    // Add separator before it
-                    finderMenuItems.splice(quitAllIndex, 0, { separator: true });
-                } else {
-                    // If "Quit All Windows" not found, add to the end before the last separator
-                    finderMenuItems.splice(finderMenuItems.length - 2, 0, {
-                        text: 'Open in New Tab',
-                        shortcut: '⌘T',
-                        action: () => {
-                            openActiveWindowInNewTab();
-                            hideDropdown();
-                        }
-                    });
-                    finderMenuItems.splice(finderMenuItems.length - 3, 0, { separator: true });
-                }
-            } else {
-                // Update existing "Open in New Tab" action
-                finderMenuItems[openInNewTabIndex].action = () => {
-                    openActiveWindowInNewTab();
-                    hideDropdown();
-                };
-            }
-        }
-
-        // Function to open the active window's URL in a new browser tab
-        function openActiveWindowInNewTab() {
-            if (!focusedWindow) {
-                alert('No active window selected. Please select a window first.');
-                return;
-            }
-
-            try {
-                // Get the URL from the focused window
-                const url = focusedWindow.config.url;
-
-                if (!url) {
-                    alert('No URL found in the active window.');
-                    return;
-                }
-
-                // Open in new tab
-                window.open(url, '_blank');
-            } catch (error) {
-                console.error('Error opening in new tab:', error);
-            }
-        }
 
         // =============================================
         // Initialize Everything
