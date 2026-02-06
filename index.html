@@ -476,13 +476,44 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
+
+        /* Add to your existing style tag */
+        .w-full.h-6.px-4.fixed.top-0 {
+            position: relative !important;
+            z-index: 1000000 !important;
+        }
+
+        /* Create a stacking context for the menu bar */
+        .bg-indigo-900 {
+            isolation: isolate !important;
+        }
+
+        /* Important: Force windows to stay below menu system */
+        .window {
+            z-index: 9999 !important;
+        }
+
+        /* When window is focused, still keep it below dropdown */
+        .window-focused {
+            z-index: 10000 !important;
+        }
+
+        /* The dock should be below windows */
+        .osx-dock {
+            z-index: 9998 !important;
+        }
+
+        /* Ensure dropdown appears above everything */
+        #finder-dropdown {
+            z-index: 2147483647 !important;
+        }
     </style>
 </head>
 
 <body class="bg-gray-900">
-    <!-- macOS Menu Bar -->
-    <div
-        class="w-full h-6 px-4 fixed top-0 flex flex-row justify-between items-center text-sm text-white bg-indigo-900 bg-opacity-25 blur shadow z-50">
+    <!-- macOS Menu Bar - Add position: relative to the container -->
+    <div class="w-full h-6 px-4 fixed top-0 flex flex-row justify-between items-center text-sm text-white bg-indigo-900 bg-opacity-25 blur shadow z-50"
+        style="position: relative;">
         <div class="flex flex-row items-center space-x-4">
             <img id="apple" class="h-4 filter-invert" src="https://img.icons8.com/ios-filled/50/ffffff/mac-os.png"
                 alt="apple_icon">
@@ -904,7 +935,9 @@
                 } catch (e) {
                     // Cross-origin restriction
                 }
-
+                // Update z-index stack
+                updateZIndexStack();
+                //
                 updateResourceMonitor();
             }
         }
@@ -1244,8 +1277,21 @@
         width: 300px;
         z-index: 2147483647 !important; /* Maximum z-index */
         position: absolute;
-        top: 100%;
+        top: 24px; /* Position below menu bar - FIXED */
         left: 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    /* Add this to your existing CSS */
+    #finder {
+        position: relative !important;
+        display: inline-block !important;
+    }
+
+    #finder-dropdown {
+        position: absolute !important;
+        top: 100% !important; /* Position below the finder text */
+        left: 0 !important;
+        margin-top: 2px !important; /* Small gap from the text */
     }
     /* Make sure dropdown appears above windows */
     #finder-dropdown,
@@ -1272,8 +1318,49 @@
     #finder-dropdown > div {
         color: black !important;
     }
+    .window {
+        z-index: 9999 !important; /* Lower than dropdown */
+    }
+
+    .window-focused {
+        z-index: 10000 !important; /* Still lower than dropdown */
+    }
+
+    /* Ensure all windows stay below the menu bar and dropdown */
+    #windowsContainer * {
+        z-index: 9999 !important;
+    }
+
+    /* Finder dropdown should be above everything */
+    #finder-dropdown,
+    #finder-dropdown * {
+        z-index: 2147483647 !important;
+        position: relative !important;
+    }
 `;
         document.head.appendChild(style);
+
+        // Add this function near the top of your script
+        function updateZIndexStack() {
+            // Windows should be below menu bar
+            windows.forEach((window, index) => {
+                if (window.element) {
+                    window.element.style.zIndex = 1000 + index;
+                }
+            });
+
+            // Menu bar should be higher
+            const menuBar = document.querySelector('.fixed.top-0');
+            if (menuBar) {
+                menuBar.style.zIndex = '1000000';
+            }
+
+            // Dock should be below windows but above background
+            const dock = document.querySelector('.osx-dock');
+            if (dock) {
+                dock.style.zIndex = '9998';
+            }
+        }
     </script>
     <script>
         // Function to load games from GitHub
