@@ -702,6 +702,9 @@
                     </div>
                     <!-- NEW: Window Footer -->
                     <div class="window-footer" id="footer-${windowId}">
+                        <button class="footer-control-btn new-window" onclick="openNewTab('${windowId}')">
+                            <i class="fas fa-external-link-alt"></i>
+                        </button>
                         <button class="footer-control-btn mute" onclick="muteGameWindow('${windowId}')">
                             <i class="fas fa-volume-mute"></i>
                         </button>
@@ -990,6 +993,26 @@
                 };
                 windowElement.classList.add('maximized');
                 window.isMaximized = true;
+            }
+        }
+
+        function openNewTab(windowId) {
+            const window = windows.find(w => w.id === windowId);
+            if (!window) return;
+
+            try {
+                // Get the URL from the focused window
+                const url = window.url;
+
+                if (!url) {
+                    alert('No URL found in the active window.');
+                    return;
+                }
+
+                // Open in new tab
+                window.open(url, '_blank');
+            } catch (error) {
+                console.error('Error opening in new tab:', error);
             }
         }
 
