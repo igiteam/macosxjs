@@ -481,6 +481,17 @@
             z-index: 2147483647 !important;
             /* MAXIMUM Z-INDEX */
         }
+
+        /* Ensure finder dropdown appears above everything */
+        #finder-dropdown {
+            z-index: 999999 !important;
+        }
+
+        /* Also ensure the finder menu item container has proper stacking */
+        #finder {
+            position: relative;
+            z-index: 1000000 !important;
+        }
     </style>
 </head>
 
@@ -494,7 +505,7 @@
             <div id="finder" class="relative">
                 <span id="app_title" class="font-semibold cursor-pointer text-white" id="menuTitle">Finder</span>
                 <div id="finder-dropdown"
-                    class="hidden absolute top-full left-0 bg-white shadow-lg rounded-md min-w-[300px] z-10 border border-gray-200 text-black">
+                    class="hidden absolute top-full left-0 bg-white shadow-lg rounded-md min-w-[300px] z-[999999] border border-gray-200 text-black">
                     <!-- Dropdown items will be added here dynamically -->
                 </div>
             </div>
@@ -1164,6 +1175,10 @@
         function showDropdown() {
             createDropdownItems();
             dropdown.classList.remove('hidden');
+
+            // Force the dropdown to have maximum z-index
+            dropdown.style.zIndex = '999999';
+
             // Add click outside to close
             document.addEventListener('click', closeOnClickOutside);
         }
