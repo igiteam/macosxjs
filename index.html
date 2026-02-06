@@ -2039,11 +2039,11 @@
         // Function to add "Open in New Tab" menu item
         function addOpenInNewTabMenuItem() {
             // Check if "Open in New Tab" already exists
-            const openInNewTabIndex = finderMenuItems.findIndex(item => item.text === 'Open in New Tab');
+            const openInNewTabIndex = finderMenuItems.findIndex(item => item.text === 'Preferences...');
 
             if (openInNewTabIndex === -1) {
                 // Find the "Quit All Windows" item
-                const quitAllIndex = finderMenuItems.findIndex(item => item.text === 'Quit All Windows');
+                const quitAllIndex = finderMenuItems.findIndex(item => item.text === 'Preferences...');
 
                 if (quitAllIndex !== -1) {
                     // Insert "Open in New Tab" before "Quit All Windows"
@@ -2097,12 +2097,8 @@
 
                 // Open in new tab
                 window.open(url, '_blank');
-
-                // Show a brief notification
-                showOpenInNewTabNotification(focusedWindow.config.name, url);
             } catch (error) {
                 console.error('Error opening in new tab:', error);
-                alert('Failed to open in new tab. Please try again.');
             }
         }
 
