@@ -483,8 +483,17 @@
         }
 
         /* Ensure finder dropdown appears above everything */
+        /* Fix for finder dropdown positioning */
         #finder-dropdown {
-            z-index: 999999 !important;
+            position: fixed;
+            z-index: 1000000 !important;
+            top: 24px;
+            /* Height of menu bar */
+            left: 72px;
+            /* Approximate position of Finder text */
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
         /* Also ensure the finder menu item container has proper stacking */
@@ -504,10 +513,6 @@
                 alt="apple_icon">
             <div id="finder" class="relative">
                 <span id="app_title" class="font-semibold cursor-pointer text-white" id="menuTitle">Finder</span>
-                <div id="finder-dropdown"
-                    class="hidden absolute top-full left-0 bg-white shadow-lg rounded-md min-w-[300px] z-[999999] border border-gray-200 text-black">
-                    <!-- Dropdown items will be added here dynamically -->
-                </div>
             </div>
         </div>
         <div class="flex flex-row justify-end items-center space-x-3">
@@ -527,6 +532,12 @@
             </div>
             <span id="time">Loading...</span>
         </div>
+    </div>
+
+    <!-- Finder Dropdown (MOVED OUTSIDE MENU BAR) -->
+    <div id="finder-dropdown"
+        class="hidden fixed bg-white shadow-lg rounded-md min-w-[300px] z-[1000000] border border-gray-200 text-black">
+        <!-- Dropdown items will be added here dynamically -->
     </div>
 
     <!-- Resource Monitor -->
@@ -1176,8 +1187,13 @@
             createDropdownItems();
             dropdown.classList.remove('hidden');
 
+            // Position the dropdown below the finder menu
+            const finderRect = finder.getBoundingClientRect();
+            dropdown.style.top = `${finderRect.bottom}px`;
+            dropdown.style.left = `${finderRect.left}px`;
+
             // Force the dropdown to have maximum z-index
-            dropdown.style.zIndex = '999999';
+            dropdown.style.zIndex = '1000000';
 
             // Add click outside to close
             document.addEventListener('click', closeOnClickOutside);
