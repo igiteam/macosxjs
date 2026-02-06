@@ -101,7 +101,7 @@
     },
     {
       "name": "Webamp",
-      "url": "https://webamp.org/",
+      "url": "https://cdn.sdappnet.cloud/rtx/webamp.html",
       "icon": "https://cdn.sdappnet.cloud/rtx/images/webamp.png",
       "color": "#ff5f57",
       "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/webamp.png"
