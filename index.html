@@ -603,6 +603,12 @@
 
     <!-- Finder Dropdown -->
     <script>
+
+        const appleBtn = document.getElementById('apple');
+        const app_titleBtn = document.getElementById('app_title');
+        const finder = document.getElementById('finder');
+        const dropdown = document.getElementById('finder-dropdown');
+
         var data;
         // Finder menu items - Updated with Quit All function
         const finderMenuItems = [
@@ -900,10 +906,6 @@
         }
         let gameUrls = [];
 
-        const appleBtn = document.getElementById('apple');
-        const app_titleBtn = document.getElementById('app_title');
-        const finder = document.getElementById('finder');
-        const dropdown = document.getElementById('finder-dropdown');
 
         // Update time (from your code)
         function updateTime() {
