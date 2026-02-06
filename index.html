@@ -507,20 +507,76 @@
         #finder-dropdown {
             z-index: 2147483647 !important;
         }
+
+        /* FIXED: Menu bar with proper stacking context */
+        .fixed.top-0 {
+            z-index: 999999 !important;
+            position: fixed !important;
+            isolation: isolate !important;
+        }
+
+        /* FIXED: Finder dropdown positioning */
+        #finder {
+            position: relative !important;
+            display: inline-block !important;
+            height: 100% !important;
+        }
+
+        #finder-dropdown {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            margin-top: 5px !important;
+            z-index: 2147483647 !important;
+            max-height: 400px;
+            overflow-y: auto;
+            width: 300px;
+            background: white !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            border-radius: 8px !important;
+        }
+
+        /* FIXED: Ensure dropdown stays above everything */
+        #finder-dropdown,
+        #finder-dropdown * {
+            z-index: 2147483647 !important;
+            position: relative !important;
+        }
+
+        /* FIXED: Windows should stay below menu system */
+        .window {
+            z-index: 100 !important;
+        }
+
+        .window-focused {
+            z-index: 200 !important;
+        }
+
+        /* FIXED: Make sure menu bar items don't interfere */
+        #finder:hover #app_title {
+            color: white !important;
+        }
+
+        /* FIXED: Remove any conflicting Tailwind z-index classes */
+        .z-50 {
+            z-index: 50 !important;
+        }
     </style>
 </head>
 
 <body class="bg-gray-900">
     <!-- macOS Menu Bar - Add position: relative to the container -->
-    <div class="w-full h-6 px-4 fixed top-0 flex flex-row justify-between items-center text-sm text-white bg-indigo-900 bg-opacity-25 blur shadow z-50"
-        style="position: relative;">
+    <div
+        class="w-full h-6 px-4 fixed top-0 flex flex-row justify-between items-center text-sm text-white bg-indigo-900 bg-opacity-25 blur shadow z-50">
         <div class="flex flex-row items-center space-x-4">
             <img id="apple" class="h-4 filter-invert" src="https://img.icons8.com/ios-filled/50/ffffff/mac-os.png"
                 alt="apple_icon">
-            <div id="finder" class="relative">
-                <span id="app_title" class="font-semibold cursor-pointer text-white" id="menuTitle">Finder</span>
+            <div id="finder" class="relative h-full flex items-center">
+                <span id="app_title" class="font-semibold cursor-pointer text-white">Finder</span>
                 <div id="finder-dropdown"
-                    class="hidden absolute top-full left-0 bg-white shadow-lg rounded-md min-w-[300px] z-10 border border-gray-200 text-black">
+                    class="hidden absolute bg-white shadow-lg rounded-md min-w-[300px] border border-gray-200 text-black"
+                    style="top: 100%; left: 0; margin-top: 5px; z-index: 2147483647;">
                     <!-- Dropdown items will be added here dynamically -->
                 </div>
             </div>
@@ -674,7 +730,7 @@
 
             const windowHtml = `
                 <div class="window" id="${windowId}" 
-                     style="top: ${top}px; left: ${left}px; width: ${windowWidth}px; height: ${windowHeight}px; z-index: ${zIndexCounter++}">
+                     style="top: ${top}px; left: ${left}px; width: ${windowWidth}px; height: ${windowHeight}px; z-index: 100">
                     <div class="window-header">
                         <div class="traffic-lights">
                             <div class="traffic-btn close-btn" data-action="close"></div>
@@ -1231,6 +1287,22 @@
         function showDropdown() {
             createDropdownItems();
             dropdown.classList.remove('hidden');
+
+            // Add backdrop to ensure dropdown is clickable
+            const backdrop = document.createElement('div');
+            backdrop.id = 'dropdown-backdrop';
+            backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        z-index: 2147483646;
+    `;
+            backdrop.onclick = hideDropdown;
+            document.body.appendChild(backdrop);
+
             // Add click outside to close
             document.addEventListener('click', closeOnClickOutside);
         }
@@ -1238,6 +1310,12 @@
         function hideDropdown() {
             dropdown.classList.add('hidden');
             document.removeEventListener('click', closeOnClickOutside);
+
+            // Remove backdrop
+            const backdrop = document.getElementById('dropdown-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
         }
 
         function closeOnClickOutside(event) {
@@ -1265,77 +1343,68 @@
         createDropdownItems();
 
         // Optional: Add CSS for better styling
+        // Optional: Add CSS for better styling
         const style = document.createElement('style');
         style.textContent = `
     #finder {
         cursor: default;
         user-select: none;
+        position: relative !important;
+        display: inline-block !important;
+        height: 100% !important;
     }
+    
     #finder-dropdown {
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        margin-top: 5px !important;
+        z-index: 2147483647 !important;
         max-height: 400px;
         overflow-y: auto;
         width: 300px;
-        z-index: 2147483647 !important; /* Maximum z-index */
-        position: absolute;
-        top: 24px; /* Position below menu bar - FIXED */
-        left: 0;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        background: white !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+        border-radius: 8px !important;
     }
-    /* Add this to your existing CSS */
-    #finder {
-        position: relative !important;
-        display: inline-block !important;
-    }
-
-    #finder-dropdown {
-        position: absolute !important;
-        top: 100% !important; /* Position below the finder text */
-        left: 0 !important;
-        margin-top: 2px !important; /* Small gap from the text */
-    }
-    /* Make sure dropdown appears above windows */
+    
+    /* Ensure dropdown stays above everything */
     #finder-dropdown,
     #finder-dropdown * {
         z-index: 2147483647 !important;
-        position: relative;
+        position: relative !important;
     }
+    
     #app_title {
-        pointer-events: auto; /* Changed to auto so clicks work */
-        color: white !important; /* Force white color for the title only */
-    }
-    /* Ensure the title stays white even when dropdown is open */
-    #finder:hover #app_title,
-    #finder:active #app_title,
-    #finder:focus #app_title {
+        pointer-events: auto;
         color: white !important;
     }
+    
+    /* Ensure the title stays white even when dropdown is open */
+    #finder:hover #app_title {
+        color: white !important;
+    }
+    
     /* Make sure dropdown items are black by default */
     #finder-dropdown,
     #finder-dropdown *:not(hr) {
-        color: black;
+        color: black !important;
     }
+    
     /* Specific styles for menu items */
     #finder-dropdown > div {
         color: black !important;
-    }
-    .window {
-        z-index: 9999 !important; /* Lower than dropdown */
-    }
-
-    .window-focused {
-        z-index: 10000 !important; /* Still lower than dropdown */
-    }
-
-    /* Ensure all windows stay below the menu bar and dropdown */
-    #windowsContainer * {
-        z-index: 9999 !important;
-    }
-
-    /* Finder dropdown should be above everything */
-    #finder-dropdown,
-    #finder-dropdown * {
-        z-index: 2147483647 !important;
         position: relative !important;
+    }
+    
+    .menu-bar-fixed {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 999999 !important;
+        isolation: isolate !important;
     }
 `;
         document.head.appendChild(style);
