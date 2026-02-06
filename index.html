@@ -522,14 +522,9 @@
             height: 100% !important;
         }
 
+        /* FIXED: Finder dropdown positioning */
         #finder-dropdown {
             position: fixed !important;
-            /* Changed from absolute to fixed */
-            top: 100px !important;
-            /* Height of menu bar */
-            left: 40px !important;
-            /* Position of Finder menu */
-            margin-top: 0 !important;
             z-index: 2147483647 !important;
             max-height: 400px;
             overflow-y: auto;
@@ -578,8 +573,8 @@
             <div id="finder" class="relative h-full flex items-center">
                 <span id="app_title" class="font-semibold cursor-pointer text-white">Finder</span>
                 <div id="finder-dropdown"
-                    class="hidden absolute bg-white shadow-lg rounded-md min-w-[300px] border border-gray-200 text-black"
-                    style="top: 100%; left: 0; margin-top: 5px; z-index: 2147483647;">
+                    class="hidden bg-white shadow-lg rounded-md min-w-[300px] border border-gray-200 text-black"
+                    style="z-index: 2147483647;">
                     <!-- Dropdown items will be added here dynamically -->
                 </div>
             </div>
@@ -1291,6 +1286,11 @@
             createDropdownItems();
             dropdown.classList.remove('hidden');
 
+            // Calculate position relative to the Finder menu item
+            const finderRect = finder.getBoundingClientRect();
+            dropdown.style.top = (finderRect.bottom + 5) + 'px';
+            dropdown.style.left = (finderRect.left) + 'px';
+
             // Add backdrop to ensure dropdown is clickable
             const backdrop = document.createElement('div');
             backdrop.id = 'dropdown-backdrop';
@@ -1349,66 +1349,74 @@
         // Optional: Add CSS for better styling
         const style = document.createElement('style');
         style.textContent = `
-    #finder {
-        cursor: default;
-        user-select: none;
-        position: relative !important;
-        display: inline-block !important;
-        height: 100% !important;
-    }
-    
-    #finder-dropdown {
-        position: absolute !important;
-        top: 100% !important;
-        left: 0 !important;
-        margin-top: 5px !important;
-        z-index: 2147483647 !important;
-        max-height: 400px;
-        overflow-y: auto;
-        width: 300px;
-        background: white !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
-        border: 1px solid rgba(0, 0, 0, 0.1) !important;
-        border-radius: 8px !important;
-    }
-    
-    /* Ensure dropdown stays above everything */
-    #finder-dropdown,
-    #finder-dropdown * {
-        z-index: 2147483647 !important;
-        position: relative !important;
-    }
-    
-    #app_title {
-        pointer-events: auto;
-        color: white !important;
-    }
-    
-    /* Ensure the title stays white even when dropdown is open */
-    #finder:hover #app_title {
-        color: white !important;
-    }
-    
-    /* Make sure dropdown items are black by default */
-    #finder-dropdown,
-    #finder-dropdown *:not(hr) {
-        color: black !important;
-    }
-    
-    /* Specific styles for menu items */
-    #finder-dropdown > div {
-        color: black !important;
-        position: relative !important;
-    }
-    
-    .menu-bar-fixed {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        z-index: 999999 !important;
-        isolation: isolate !important;
-    }
+#finder {
+    cursor: default;
+    user-select: none;
+    position: relative !important;
+    display: inline-block !important;
+    height: 100% !important;
+}
+
+#finder-dropdown {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+    max-height: 400px;
+    overflow-y: auto;
+    width: 300px;
+    background: white !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+/* Ensure dropdown stays above everything */
+#finder-dropdown,
+#finder-dropdown * {
+    z-index: 2147483647 !important;
+    position: relative !important;
+}
+
+#app_title {
+    pointer-events: auto;
+    color: white !important;
+}
+
+/* Ensure the title stays white even when dropdown is open */
+#finder:hover #app_title {
+    color: white !important;
+}
+
+/* Make sure dropdown items are black by default */
+#finder-dropdown,
+#finder-dropdown *:not(hr) {
+    color: black !important;
+}
+
+/* Specific styles for menu items */
+#finder-dropdown > div {
+    color: black !important;
+    position: relative !important;
+}
+
+.menu-bar-fixed {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 999999 !important;
+    isolation: isolate !important;
+}
+
+/* Ensure menu items are clickable */
+#finder-dropdown > div {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+#finder-dropdown > div:hover {
+    background-color: #3b82f6 !important;
+    color: white !important;
+}
 `;
         document.head.appendChild(style);
 
