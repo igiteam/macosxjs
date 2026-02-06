@@ -501,6 +501,11 @@
             position: relative;
             z-index: 1000000 !important;
         }
+
+        /* Disable lazy loading for all images when in iframe */
+        iframe img {
+            content-visibility: auto !important;
+        }
     </style>
 </head>
 
