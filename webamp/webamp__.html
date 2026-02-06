@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAmp</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .app {
+            width: 100%;
+            height: 100%;
+            border: 1px solid;
+        }
+
+        body {
+            background-color: #3a6ea5;
+            font-family: arial;
+            font-size: 15px;
+        }
+
+        ::selection {
+            background: none;
+        }
+
+        #browser-compatibility {
+            display: none;
+            position: absolute;
+            width: 275px;
+            margin-top: -58px;
+            margin-left: -137px;
+            top: 40%;
+            left: 50%;
+            background: #fff;
+            text-align: center;
+        }
+
+        .about {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            color: #fff;
+            z-index: -1;
+            margin: 0;
+            display: none;
+            flex-direction: row;
+        }
+
+        @media all and (display-mode: fullscreen) {
+            .about {
+                display: none;
+            }
+        }
+
+        .about.loaded,
+        .about a {
+            display: flex;
+        }
+
+        .about a svg {
+            margin: 10px 13px;
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+            transition: 0.25s ease-out;
+        }
+
+        .about a:before {
+            position: absolute;
+            top: 0;
+            content: "";
+            width: 42px;
+            height: 2px;
+            background-color: #fff0;
+            transition: 0.25s ease-out;
+        }
+
+        .about a:hover:before {
+            background-color: #fff;
+            transition: 0.25s ease-out;
+        }
+
+        .about a:hover svg {
+            transition: 0.25s ease-out;
+            transform: scale(1.35);
+        }
+
+        #github-share {
+            background-color: #2d3238;
+        }
+
+        #music-credits {
+            background-color: #598dc5;
+        }
+
+        #butterchurn-share {
+            display: none;
+            background-size: 100%;
+        }
+
+        #app {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            z-index: -2;
+        }
+
+        #app #loading {
+            color: #fff;
+            text-align: center;
+            font-size: 40px;
+            height: 30px;
+            position: absolute;
+            margin: auto;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+        }
+
+        #app #loading .ellipsis-anim span {
+            opacity: 0;
+            -webkit-animation: ellipsis-dot 1s infinite;
+            animation: ellipsis-dot 1s infinite;
+        }
+
+        #app #loading .ellipsis-anim span:nth-child(1) {
+            -webkit-animation-delay: 0s;
+            animation-delay: 0s;
+        }
+
+        #app #loading .ellipsis-anim span:nth-child(2) {
+            -webkit-animation-delay: 0.1s;
+            animation-delay: 0.1s;
+        }
+
+        #app #loading .ellipsis-anim span:nth-child(3) {
+            -webkit-animation-delay: 0.2s;
+            animation-delay: 0.2s;
+        }
+
+        @-webkit-keyframes ellipsis-dot {
+            0% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes ellipsis-dot {
+            0% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        .desktop-icon {
+            text-align: center;
+            cursor: pointer;
+            image-rendering: pixelated;
+        }
+
+        .desktop-icon-title {
+            color: #fff;
+            font-family: "MS Sans Serif", Segoe UI, sans-serif;
+            font-size: 11px;
+            -webkit-font-smoothing: none;
+            margin-top: 5px;
+            width: 100%;
+            border: 1px dotted transparent;
+            text-overflow: ellipsis;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .desktop-icon.selected .desktop-icon-title {
+            background-color: navy;
+            border-color: #fff;
+        }
+
+        .desktop-icon.selected img {
+            filter: brightness(0.35) sepia(100%) hue-rotate(148deg) saturate(10);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <!-- Load Butterchurn and its presets first -->
+    <script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
+    <script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
+    <!-- Load JSZip for skin extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Load WebAmp only once (using @next which is the latest stable) -->
+    <script src="https://unpkg.com/webamp@next/built/webamp.bundle.min.js"></script>
+
+    <script>
+        const skinList = [
+            "https://skins.webamp.org/skin/1108dd2c6920e90df819332db3c7e0e7/JimmyHendrix.wsz/",
+            "https://skins.webamp.org/skin/ac2f12a826f2086a911040a46de1ae0a/Nelly_Furtado_-_Yellow.wsz/",
+            "https://skins.webamp.org/skin/199153517480cfda1a4b16eb41579521/EternalGrey.wsz/",
+            "https://skins.webamp.org/skin/8e01430efb188fa8e94359ac1fc169df/jayandsilentbob.zip/",
+            "https://skins.webamp.org/skin/082a83808878cfee63516ef24663d2d3/sexyfriends.zip/",
+            "https://skins.webamp.org/skin/02367ad2c46215b32be76608120558db/shome3.wsz/",
+            "https://skins.webamp.org/skin/01d31dd426ffb5d0a6dfc4ba3d267264/Taxi_driver.wsz/",
+            "https://skins.webamp.org/skin/00545a0e5dbc066826785435f884e67b/Elvis_conversation.wsz/",
+            "https://skins.webamp.org/skin/e48144026e980af81e04da38fc5027c4/Pac-4-Eva.wsz/",
+            "https://skins.webamp.org/skin/1dd916d478423dc126e5b28deced11f7/NatalieAmp.wsz/",
+            "https://skins.webamp.org/skin/4349b53974f04bb6801d79b78aadbb0f/AKA_KILL_BILL.wsz/",
+            "https://skins.webamp.org/skin/cfd5bc4576a22bafcd03f26c3977a632/SouthPark_Amp.zip/",
+            "https://skins.webamp.org/skin/749c638f63c0b27a8d824b1375bd6e63/AustinPowers.zip/",
+            "https://skins.webamp.org/skin/52fb162d1dcd616659eef2fbad46b238/Mrbeanamp2.wsz/",
+            "https://skins.webamp.org/skin/81a9370ae18c53b1cb28bd33ab712a51/Counter-Amp.wsz/",
+            "https://skins.webamp.org/skin/800cedf7c17deb49f735d3a096909647/slimshdy.wsz/",
+            "https://skins.webamp.org/skin/cbc967ff95d8ac0fd7434a4a21bd9089/dance_dbz_skin.wsz/",
+            "https://skins.webamp.org/skin/7bbc09c1c4790229b3aeabbcc3194b72/Pokemon-Raz.wsz/",
+            "https://skins.webamp.org/skin/ab7ca8021400abcd02b2aa809ca8620d/BubasaurSkin.wsz/",
+            "https://skins.webamp.org/skin/c7639bb913c7cf2100a8e1265f8c0d44/skin12.wsz/",
+            "https://skins.webamp.org/skin/d0b99ef5900bfae51c62485f4a334a06/Spiderman_Dogol.wsz/",
+            "https://skins.webamp.org/skin/76ad279fec32cf1d77750b8ec03717a9/spiderman_cartoon.wsz/",
+            "https://skins.webamp.org/skin/70bb69bb8c6877a9f5c9a88422a3684e/Spina.wsz/",
+            "https://skins.webamp.org/skin/5b02ee62506252791eab738c4dd271d9/FX_Matrix_V1.wsz/",
+            "https://skins.webamp.org/skin/d5bfe1f8845945076c83bf7aa538d310/Matrix_by_sukhi.wsz/",
+            "https://skins.webamp.org/skin/82bbb119f64c25bdfcfbcca772874408/TheMatrixV2.wsz/",
+            "https://skins.webamp.org/skin/24c93451049b7146b976f973fe247c35/jaws.wsz/",
+            "https://skins.webamp.org/skin/b4c6915aee656faa8a17e0f5edd96584/Kurt_Cobain_-_Nirvana.wsz/",
+            "https://skins.webamp.org/skin/b2851779b4f60d1844c02fb088c68ea9/Nirvana_logo_skin.wsz/",
+            "https://skins.webamp.org/skin/07d31a296dc02a021fa6ddbcffeb5c5f/Donkey_Kong_Handheld.wsz/",
+            "https://skins.webamp.org/skin/84f19e86d232de5333ccc9fbd83104d4/Amidalamaroon_.wsz/",
+            "https://skins.webamp.org/skin/25391e1f42743632fec8d667a2c03fc1/Legolas_Flame.wsz/",
+            "https://skins.webamp.org/skin/d2e5075edb80d5e22a8d89c7fcaad2e2/Linkin_Park_Memeber.wsz/",
+            "https://skins.webamp.org/skin/6f1007d01b69e52a3ff8eca31b79a9ce/LinkinAmp.wsz/",
+            "https://skins.webamp.org/skin/58a4220f17727bb2d6a50860f9e880db/Linkin_Park_-_Meteora.wsz/",
+            "https://skins.webamp.org/skin/0f32613cc4e0c65910e726ea06858e99/weed_amp.wsz/",
+            "https://skins.webamp.org/skin/78646869295edbb029120d24b05e417f/ja-amp_by_lizard.wsz/",
+            "https://skins.webamp.org/skin/3f8b64b2dcf88f78804f55d8fcb613c9/Bob_Marley_Skin.wsz/"
+        ];
+
+        const initialTracks = [
+            {
+                url: "https://archive.org/download/jimi-hendrix-box-set/cd1-01-jimi_hendrix-purple_haze-ksi.mp3",
+                metaData: {
+                    artist: "SONGDROP Radio! 24/7",
+                    "title": "Live Stream"
+                },
+                duration: 0,
+            },
+            {
+                url: "http://stream.rockantenne.de/90er-rock/stream/mp3",
+                metaData: {
+                    artist: "ROCK ANTENNE 90er Rock",
+                    "title": "Live Stream"
+                },
+                duration: 0,
+            },
+            {
+                url: "http://stream.rockantenne.de/70er-rock/stream/mp3",
+                metaData: {
+                    artist: "ROCK ANTENNE 70er Rock",
+                    "title": "Live Stream"
+                },
+                duration: 0,
+            },
+            {
+                url: "https://stream.starfm.de/berlin/mp3-192/",
+                metaData: {
+                    artist: "STAR FM Maximum Rock Berlin",
+                    "title": "Live Stream"
+                },
+                duration: 0,
+            },
+            {
+                "url": "https://live.amperwave.net/direct/townsquare-keyjfmmp3-ibc3.mp3&source=ts-tunein",
+                "metaData": {
+                    "artist": "KEYJ 107.9",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "http://online.radioroks.ua/RadioROKS",
+                "metaData": {
+                    "artist": "Радіо РОКС",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "https://media.profesionalhosting.com:8047/stream",
+                "metaData": {
+                    "artist": "MariskalRock Radio",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "https://stream.liferadio.tirol/partyhitmix/mp3-192/",
+                "metaData": {
+                    "artist": "Life Radio Tirol - Partyhitmix",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "http://online.radioroks.ua/RadioROKS_Ballads",
+                "metaData": {
+                    "artist": "Radio ROKS Rock-Ballads",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "https://stream.liferadio.tirol/italo/mp3-192/",
+                "metaData": {
+                    "artist": "Life Radio Tirol - Italo Hits",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "https://stream.liferadio.tirol/80s/mp3-192/",
+                "metaData": {
+                    "artist": "Life Radio Tirol - 80s",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "http://stream.starfm.de/nrw/mp3-192/",
+                "metaData": {
+                    "artist": "STAR FM NRW",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "https://stream.liferadio.tirol/chartbreaker/mp3-192/",
+                "metaData": {
+                    "artist": "Life Radio Tirol - Chartbreaker",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "http://online.radioroks.ua/RadioROKS_HardnHeavy",
+                "metaData": {
+                    "artist": "Radio ROKS Hard 'n' Heavy",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "http://stream.104.6rtl.com/rtl-black/mp3-192/",
+                "metaData": {
+                    "artist": "104.6 RTL Black Greatest Hits",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "https://streams.rsa-sachsen.de/rsa-rockzirkus/mp3-192/",
+                "metaData": {
+                    "artist": "R.SA Rockzirkus",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "https://stream.liferadio.tirol/weihnachten/mp3-192/",
+                "metaData": {
+                    "artist": "Life Radio Tirol - Weihnachtshits",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "http://online.radioroks.ua/RadioROKS_Ukr",
+                "metaData": {
+                    "artist": "Radio ROKS Український рок",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "http://online.radioroks.ua/RadioROKS_NewRock",
+                "metaData": {
+                    "artist": "Radio ROKS Новий Рок",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "https://cdnstream1.com/4496_128.mp3",
+                "metaData": {
+                    "artist": "Boss Radio 66",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            },
+            {
+                "url": "http://stream.sajnet.com.br:8000/live",
+                "metaData": {
+                    "artist": "Rádio Saj Net",
+                    "title": "Live Stream"
+                },
+                "duration": 0
+            }
+        ];
+
+        // Transform skin URLs
+        function transformUrl(url) {
+            if (typeof url !== 'string' || !url.startsWith("https://skins.webamp.org/skin/")) {
+                console.error("Invalid URL:", url);
+                return null;
+            }
+
+            const urlParts = url.split("/");
+            if (urlParts.length < 6) {
+                console.error("Unexpected URL format:", url);
+                return null;
+            }
+
+            const id = urlParts[4];
+            const fileName = urlParts[5];
+            const name = fileName.split(".")[0];
+
+            return {
+                url: `https://cdn.webampskins.org/skins/${id}.wsz`,
+                name: name
+            };
+        }
+
+        function transformUrls(urls) {
+            return urls.map(transformUrl).filter(urlObj => urlObj !== null);
+        }
+
+        function getRandomSkinUrl(skins) {
+            if (skins.length === 0) return null;
+            const randomIndex = Math.floor(Math.random() * skins.length);
+            return skins[randomIndex].url;
+        }
+
+        function randomizeList(arr) {
+            const shuffled = [...arr];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Initialize WebAmp after the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            const skins = transformUrls(randomizeList(skinList));
+            const app = document.getElementById("app");
+
+            const options = {
+                initialTracks: initialTracks,
+                windowLayout: {
+                    main: {
+                        position: { left: 0, top: 10 }
+                    },
+                    equalizer: {
+                        closed: false,
+                        position: { left: 0, top: 115 }
+                    },
+                    playlist: {
+                        closed: false,
+                        position: { left: 0, top: 230 }
+                    },
+                    milkdrop: {
+                        closed: false,
+                        position: { left: 0, top: 232 },
+                        size: {
+                            extraHeight: 11,
+                            extraWidth: 11,
+                        }
+                    }
+                },
+                initialSkin: {
+                    url: getRandomSkinUrl(skins)
+                },
+                availableSkins: skins,
+                enableDoubleSizeMode: false,
+                enableHotkeys: true,
+                zIndex: 99999,
+                filePickers: [],
+                requireJSZip: true // Add this line to explicitly require JSZip
+            };
+
+            try {
+                // Check if Webamp is defined
+                if (typeof Webamp !== 'undefined') {
+                    const webamp = new Webamp(options);
+                    webamp.renderWhenReady(app).catch(error => {
+                        console.error('Failed to render Webamp:', error);
+                    });
+                } else {
+                    console.error('Webamp is not defined. Check script loading order.');
+                }
+            } catch (error) {
+                console.error('Error creating Webamp instance:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>
