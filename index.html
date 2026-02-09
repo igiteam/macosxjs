@@ -2345,6 +2345,7 @@
                     const scaledGap = Math.floor(parseInt(gapValue) * scaleFactor);
                     const scaledPaddingX = Math.floor(parseInt(paddingValue.split(' ')[1]) * scaleFactor);
                     const scaledPaddingY = Math.floor(parseInt(paddingValue.split(' ')[0]) * scaleFactor);
+                    const scaledImageBorderRadius = Math.max(4, Math.floor(imageBorderRadius * scaleFactor)); // Minimum 4px
 
                     // Update image sizes
                     dockImages.forEach(img => {
