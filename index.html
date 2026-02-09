@@ -2274,29 +2274,26 @@
                 const originalImageSize = 50; // From your CSS: width: 50px; height: 50px;
                 const originalPadding = "10px 20px"; // From your CSS: padding: 10px 20px;
                 const originalGap = "15px"; // From your CSS: gap: 15px;
-                const originalBorderRadius = "20px"; // From your CSS: border-radius: 20px;
+                const originalBorderRadius = 20; // From your CSS: border-radius: 20px;
 
                 // Determine size based on breakpoints (no animations)
-                let imageSize, paddingValue, gapValue, borderRadiusValue;
+                let imageSize, paddingValue, gapValue;
 
                 if (windowWidth > 768) {
                     // Large/Medium screens: use original CSS values (exactly like before)
                     imageSize = originalImageSize;
                     paddingValue = originalPadding;
                     gapValue = originalGap;
-                    borderRadiusValue = originalBorderRadius;
                 } else if (windowWidth > 550) {
                     // Small tablets: slightly smaller than original
                     imageSize = 45; // 5px smaller than original
                     paddingValue = "8px 16px"; // Slightly reduced padding
                     gapValue = "12px"; // Slightly reduced gap
-                    borderRadiusValue = "18px"; // Slightly smaller border radius
                 } else {
                     // Mobile screens (≤ 550px): significantly smaller
                     imageSize = 40; // 10px smaller than original
                     paddingValue = "6px 12px"; // More reduced padding
                     gapValue = "8px"; // More reduced gap
-                    borderRadiusValue = "16px"; // Smaller border radius
                 }
 
                 // Apply sizes to dock images (no transition)
@@ -2324,7 +2321,18 @@
                 dock.style.transition = 'none';
                 dock.style.padding = paddingValue;
                 dock.style.gap = gapValue;
-                dock.style.borderRadius = borderRadiusValue;
+
+                // FIXED: Calculate border radius based on your formula
+                // (max, originalBorderRadius, originalBorderRadius - shrink/2)
+                const shrinkFactor = (originalImageSize - imageSize) / originalImageSize; // How much smaller than original
+                const calculatedRadius = Math.max(
+                    originalBorderRadius,
+                    originalBorderRadius,
+                    originalBorderRadius - (shrinkFactor * originalBorderRadius / 2)
+                );
+
+                // Use the calculated radius (will be originalBorderRadius or very close to it)
+                dock.style.borderRadius = `${calculatedRadius}px`;
 
                 // Ensure dock doesn't exceed available space
                 if (totalDockWidth > availableWidth) {
@@ -2346,6 +2354,15 @@
                     // Update dock styles
                     dock.style.padding = `${scaledPaddingY}px ${scaledPaddingX}px`;
                     dock.style.gap = `${scaledGap}px`;
+
+                    // Recalculate border radius for scaled dock
+                    const newShrinkFactor = (originalImageSize - Math.max(30, scaledImageSize)) / originalImageSize;
+                    const newCalculatedRadius = Math.max(
+                        originalBorderRadius,
+                        originalBorderRadius,
+                        originalBorderRadius - (newShrinkFactor * originalBorderRadius / 2)
+                    );
+                    dock.style.borderRadius = `${newCalculatedRadius}px`;
                 }
 
                 // Always ensure minimum 20px margins on both sides
