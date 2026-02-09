@@ -2325,12 +2325,11 @@
                 // FIXED: Calculate border radius based on your formula
                 // (max, originalBorderRadius, originalBorderRadius - shrink/2)
                 const shrinkFactor = (originalImageSize - imageSize) / originalImageSize; // How much smaller than original
+                const shrinkAmount = (shrinkFactor * originalBorderRadius) / 2;
                 const calculatedRadius = Math.max(
-                    originalBorderRadius,
-                    originalBorderRadius,
-                    originalBorderRadius - (shrinkFactor * originalBorderRadius / 2)
+                    originalBorderRadius, // max
+                    originalBorderRadius - shrinkAmount // originalBorderRadius - shrink/2
                 );
-                console.log(originalBorderRadius, calculatedRadius, shrinkFactor);
                 // Use the calculated radius (will be originalBorderRadius or very close to it)
                 dock.style.borderRadius = `${calculatedRadius}px`;
 
