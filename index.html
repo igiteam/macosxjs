@@ -2331,21 +2331,6 @@
                 dock.style.padding = paddingValue;
                 dock.style.gap = gapValue;
 
-                var calculatedRadius = originalBorderRadius;
-                // FIXED: Calculate border radius based on your formula
-                // (max, originalBorderRadius, originalBorderRadius - shrink/2)
-                if (windowWidth > 768) {
-                    // Large/Medium screens: use original CSS values (exactly like before)
-                    calculatedRadius = originalBorderRadius;
-                } else if (windowWidth > 550) {
-                    // Small tablets: slightly smaller than original
-                    calculatedRadius = 4;
-                } else {
-                    // Mobile screens (≤ 550px): significantly smaller
-                    calculatedRadius = 2;
-                }
-                // Use the calculated radius (will be originalBorderRadius or very close to it)
-                dock.style.borderRadius = `${calculatedRadius}px`;
 
                 // Ensure dock doesn't exceed available space
                 if (totalDockWidth > availableWidth) {
@@ -2367,16 +2352,24 @@
                     // Update dock styles
                     dock.style.padding = `${scaledPaddingY}px ${scaledPaddingX}px`;
                     dock.style.gap = `${scaledGap}px`;
-
-                    // Recalculate border radius for scaled dock
-                    const newShrinkFactor = (originalImageSize - Math.max(30, scaledImageSize)) / originalImageSize;
-                    const newCalculatedRadius = Math.max(
-                        originalBorderRadius,
-                        originalBorderRadius,
-                        originalBorderRadius - (newShrinkFactor * originalBorderRadius / 2)
-                    );
-                    dock.style.borderRadius = `${newCalculatedRadius}px`;
                 }
+                // Recalculate border radius for scaled dock
+                var calculatedRadius = originalBorderRadius;
+                // FIXED: Calculate border radius based on your formula
+                // (max, originalBorderRadius, originalBorderRadius - shrink/2)
+                if (windowWidth > 768) {
+                    // Large/Medium screens: use original CSS values (exactly like before)
+                    calculatedRadius = originalBorderRadius;
+                } else if (windowWidth > 550) {
+                    // Small tablets: slightly smaller than original
+                    calculatedRadius = 4;
+                } else {
+                    // Mobile screens (≤ 550px): significantly smaller
+                    calculatedRadius = 2;
+                }
+                // Use the calculated radius (will be originalBorderRadius or very close to it)
+                dock.style.borderRadius = `${calculatedRadius}px`;
+
 
                 // Always ensure minimum 20px margins on both sides
                 dock.style.marginLeft = `${minMargin}px`;
