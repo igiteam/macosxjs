@@ -2362,10 +2362,10 @@
                     calculatedRadius = originalBorderRadius;
                 } else if (windowWidth > 550) {
                     // Small tablets: slightly smaller than original
-                    calculatedRadius = 4;
+                    calculatedRadius = 14;
                 } else {
                     // Mobile screens (≤ 550px): significantly smaller
-                    calculatedRadius = 2;
+                    calculatedRadius = 12;
                 }
                 // Use the calculated radius (will be originalBorderRadius or very close to it)
                 dock.style.borderRadius = `${calculatedRadius}px`;
