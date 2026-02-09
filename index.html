@@ -2223,6 +2223,12 @@
         }
 
 
+
+        // Make functions available globally
+        window.showDuplicateModal = showDuplicateModal;
+        window.hideDuplicateModal = hideDuplicateModal;
+        window.performDuplicate = performDuplicate;
+
         // =============================================
         // Initialize Everything
         // =============================================
@@ -2249,13 +2255,13 @@
                 }
             });
 
-            handleWindowResize();
+            // 2. Check for configuration in URL (with delay to allow page to load)
+            setTimeout(() => {
+                handleWindowResize();
+            }, 1800);
+
         });
 
-        // Make functions available globally
-        window.showDuplicateModal = showDuplicateModal;
-        window.hideDuplicateModal = hideDuplicateModal;
-        window.performDuplicate = performDuplicate;
     </script>
     <script>
         // Fix dock and images to shrink respectively with width
