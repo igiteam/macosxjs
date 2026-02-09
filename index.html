@@ -975,6 +975,10 @@
             muteLi.appendChild(muteImg);
             muteLi.onclick = muteAllGames;
             dock.appendChild(muteLi);
+
+            //resize dock
+            handleWindowResize();
+
         }
 
         // Create a new window
@@ -2257,7 +2261,6 @@
 
             // 2. Check for configuration in URL (with delay to allow page to load)
             setTimeout(() => {
-                handleWindowResize();
             }, 10);
 
         });
