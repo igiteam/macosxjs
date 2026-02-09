@@ -2307,25 +2307,60 @@
                     img.style.borderRadius = '10px'; // From your CSS: border-radius: 10px;
                 });
 
-                // Apply styles to dock
+                // Calculate total dock width including items
+                const totalItems = dockItems.length;
+                const totalGapWidth = (totalItems - 1) * parseInt(gapValue);
+                const totalItemsWidth = totalItems * imageSize;
+                const totalPaddingWidth = 2 * parseInt(paddingValue.split(' ')[1]); // Right and left padding
+                const totalDockWidth = totalItemsWidth + totalGapWidth + totalPaddingWidth;
+
+                // Calculate available space (window width minus minimum margins)
+                const minMargin = 20; // Minimum 20px margin on each side
+                const availableWidth = windowWidth - (minMargin * 2);
+
+                // Apply styles to dock with minimum margins
                 dock.style.transition = 'none';
                 dock.style.padding = paddingValue;
                 dock.style.gap = gapValue;
                 dock.style.borderRadius = borderRadiusValue;
 
+                // Ensure dock doesn't exceed available space
+                if (totalDockWidth > availableWidth) {
+                    // Scale down the dock to fit within margins
+                    const scaleFactor = availableWidth / totalDockWidth;
+
+                    // Apply scaled values
+                    const scaledImageSize = Math.floor(imageSize * scaleFactor);
+                    const scaledGap = Math.floor(parseInt(gapValue) * scaleFactor);
+                    const scaledPaddingX = Math.floor(parseInt(paddingValue.split(' ')[1]) * scaleFactor);
+                    const scaledPaddingY = Math.floor(parseInt(paddingValue.split(' ')[0]) * scaleFactor);
+
+                    // Update image sizes
+                    dockImages.forEach(img => {
+                        img.style.width = `${Math.max(30, scaledImageSize)}px`; // Minimum 30px
+                        img.style.height = `${Math.max(30, scaledImageSize)}px`;
+                    });
+
+                    // Update dock styles
+                    dock.style.padding = `${scaledPaddingY}px ${scaledPaddingX}px`;
+                    dock.style.gap = `${scaledGap}px`;
+                }
+
+                // Always ensure minimum 20px margins on both sides
+                dock.style.marginLeft = `${minMargin}px`;
+                dock.style.marginRight = `${minMargin}px`;
+
                 // Adjust tooltip positions for smaller images
                 const tooltips = dock.querySelectorAll('li span');
+                const currentImageSize = parseInt(dockImages[0]?.style.width || imageSize);
                 tooltips.forEach(span => {
                     // Update tooltip position based on image size
-                    span.style.bottom = `${imageSize + 20}px`; // 20px above the image
+                    span.style.bottom = `${currentImageSize + 20}px`; // 20px above the image
                 });
 
                 // Keep hover animation but not resize animation
                 dockItems.forEach(item => {
                     item.style.transition = 'transform 0.3s ease';
-                    // Update hover scale to maintain proportion with image size
-                    const scaleFactor = imageSize / originalImageSize;
-                    item.style.setProperty('--hover-scale', 1.2 * scaleFactor);
                 });
             }
 
