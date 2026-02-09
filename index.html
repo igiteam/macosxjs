@@ -2330,7 +2330,7 @@
                     originalBorderRadius,
                     originalBorderRadius - (shrinkFactor * originalBorderRadius / 2)
                 );
-
+                console.log(originalBorderRadius, calculatedRadius, shrinkFactor);
                 // Use the calculated radius (will be originalBorderRadius or very close to it)
                 dock.style.borderRadius = `${calculatedRadius}px`;
 
