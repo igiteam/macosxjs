@@ -2342,41 +2342,43 @@
             });
 
             // 3. Adjust menu bar items
-            const menuBar = document.querySelector('.w-full.h-6.px-4.fixed.top-0');
-            if (menuBar) {
-                const scale = Math.min(1, windowWidth / 1200);
-                menuBar.style.paddingLeft = `${10 * scale}px`;
-                menuBar.style.paddingRight = `${10 * scale}px`;
-                menuBar.style.fontSize = `${12 * scale}px`;
-            }
+            // const menuBar = document.querySelector('.w-full.h-6.px-4.fixed.top-0');
+            // if (menuBar) {
+            //     const scale = Math.min(1, windowWidth / 1200);
+            //     menuBar.style.paddingLeft = `${10 * scale}px`;
+            //     menuBar.style.paddingRight = `${10 * scale}px`;
+            //     menuBar.style.fontSize = `${12 * scale}px`;
+            // }
 
             // 4. Adjust add window button
-            const addWindowBtn = document.getElementById('addWindowBtn');
-            if (addWindowBtn) {
-                const scale = Math.min(1, windowWidth / 1200);
-                addWindowBtn.style.fontSize = `${13 * scale}px`;
-                addWindowBtn.style.padding = `${10 * scale}px ${16 * scale}px`;
-                addWindowBtn.style.right = `${20 * scale}px`;
-            }
-
-            // 5. Adjust resource monitor
-            const resourceMonitor = document.getElementById('resourceMonitor');
-            if (resourceMonitor) {
-                const scale = Math.min(1, windowWidth / 1200);
-                resourceMonitor.style.transform = `scale(${0.6 * scale}, ${0.6 * scale})`;
-                resourceMonitor.style.left = `${-34 * scale}px`;
-            }
-
-            // 6. Adjust traffic lights and window controls
-            const trafficBtns = document.querySelectorAll('.traffic-btn');
-            trafficBtns.forEach(btn => {
-                const scale = Math.min(1, windowWidth / 1200);
-                btn.style.width = `${12 * scale}px`;
-                btn.style.height = `${12 * scale}px`;
-            });
+            // const addWindowBtn = document.getElementById('addWindowBtn');
+            // if (addWindowBtn) {
+            //     const scale = Math.min(1, windowWidth / 1200);
+            //     addWindowBtn.style.fontSize = `${13 * scale}px`;
+            //     addWindowBtn.style.padding = `${10 * scale}px ${16 * scale}px`;
+            //     addWindowBtn.style.right = `${20 * scale}px`;
+            // }
 
             // 7. Update all iframe containers to match new window sizes
             updateIframeContainers();
+
+            // 5. Adjust resource monitor
+            // const resourceMonitor = document.getElementById('resourceMonitor');
+            // if (resourceMonitor) {
+            //     const scale = Math.min(1, windowWidth / 1200);
+            //     resourceMonitor.style.transform = `scale(${0.6 * scale}, ${0.6 * scale})`;
+            //     resourceMonitor.style.left = `${-34 * scale}px`;
+            // }
+
+            // 6. Adjust traffic lights and window controls
+            // const trafficBtns = document.querySelectorAll('.traffic-btn');
+            // trafficBtns.forEach(btn => {
+            //     const scale = Math.min(1, windowWidth / 1200);
+            //     btn.style.width = `${12 * scale}px`;
+            //     btn.style.height = `${12 * scale}px`;
+            // });
+
+
         }
 
         // Helper function to update iframe containers
