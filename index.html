@@ -2255,6 +2255,163 @@
         window.hideDuplicateModal = hideDuplicateModal;
         window.performDuplicate = performDuplicate;
     </script>
+    <script>
+        // Fix dock and images to shrink respectively with width
+        window.addEventListener('resize', handleWindowResize);
+
+        function handleWindowResize() {
+            const windowWidth = window.innerWidth;
+
+            // 1. Adjust dock scaling based on window width
+            const dock = document.getElementById('macDock');
+            if (dock) {
+                const dockItems = dock.querySelectorAll('li');
+                const dockImages = dock.querySelectorAll('img');
+
+                // Calculate scale factor based on window width
+                // Base reference width: 1920px (full HD)
+                const baseWidth = 1920;
+                const scaleFactor = Math.min(1, windowWidth / baseWidth);
+
+                // Apply scaling to dock items
+                dockItems.forEach(item => {
+                    // Adjust spacing between items
+                    item.style.transform = 'scale(1)'; // Reset transform for calculation
+
+                    // Adjust the base scale of dock items
+                    const baseScale = 0.9 + (scaleFactor * 0.2); // Scale between 0.9 and 1.1
+                    item.style.setProperty('--dock-scale', baseScale);
+                });
+
+                // Adjust dock image sizes
+                const baseImageSize = 50; // Original 50px
+                const newImageSize = Math.max(30, Math.min(baseImageSize, baseImageSize * scaleFactor));
+
+                dockImages.forEach(img => {
+                    img.style.width = `${newImageSize}px`;
+                    img.style.height = `${newImageSize}px`;
+                });
+
+                // Adjust dock padding and gap
+                const basePadding = 20;
+                const baseGap = 15;
+                dock.style.padding = `${basePadding * scaleFactor}px ${basePadding * 1.5 * scaleFactor}px`;
+                dock.style.gap = `${baseGap * scaleFactor}px`;
+
+                // Adjust dock border radius
+                dock.style.borderRadius = `${20 * scaleFactor}px`;
+            }
+
+            // 2. Adjust window sizes and positions
+            windows.forEach(windowObj => {
+                if (windowObj && windowObj.element && !windowObj.isMaximized) {
+                    const winElement = windowObj.element;
+                    const computedStyle = getComputedStyle(winElement);
+
+                    // Get current position and size as percentages
+                    const currentLeft = parseInt(computedStyle.left) || 0;
+                    const currentTop = parseInt(computedStyle.top) || 0;
+                    const currentWidth = parseInt(computedStyle.width) || 700;
+                    const currentHeight = parseInt(computedStyle.height) || 500;
+
+                    // Calculate percentage of screen
+                    const widthPercent = currentWidth / window.innerWidth;
+                    const leftPercent = currentLeft / window.innerWidth;
+                    const heightPercent = currentHeight / window.innerHeight;
+                    const topPercent = currentTop / window.innerHeight;
+
+                    // Apply new sizes maintaining proportions
+                    const newWidth = Math.max(400, windowWidth * widthPercent * 0.95);
+                    const newLeft = Math.max(0, windowWidth * leftPercent);
+                    const newHeight = Math.max(300, window.innerHeight * heightPercent * 0.95);
+                    const newTop = Math.max(30, window.innerHeight * topPercent);
+
+                    winElement.style.width = `${newWidth}px`;
+                    winElement.style.left = `${newLeft}px`;
+                    winElement.style.height = `${newHeight}px`;
+                    winElement.style.top = `${newTop}px`;
+
+                    // Update original position for restore functionality
+                    windowObj.originalPosition = {
+                        width: newWidth,
+                        height: newHeight,
+                        left: newLeft,
+                        top: newTop
+                    };
+                }
+            });
+
+            // 3. Adjust menu bar items
+            const menuBar = document.querySelector('.w-full.h-6.px-4.fixed.top-0');
+            if (menuBar) {
+                const scale = Math.min(1, windowWidth / 1200);
+                menuBar.style.paddingLeft = `${10 * scale}px`;
+                menuBar.style.paddingRight = `${10 * scale}px`;
+                menuBar.style.fontSize = `${12 * scale}px`;
+            }
+
+            // 4. Adjust add window button
+            const addWindowBtn = document.getElementById('addWindowBtn');
+            if (addWindowBtn) {
+                const scale = Math.min(1, windowWidth / 1200);
+                addWindowBtn.style.fontSize = `${13 * scale}px`;
+                addWindowBtn.style.padding = `${10 * scale}px ${16 * scale}px`;
+                addWindowBtn.style.right = `${20 * scale}px`;
+            }
+
+            // 5. Adjust resource monitor
+            const resourceMonitor = document.getElementById('resourceMonitor');
+            if (resourceMonitor) {
+                const scale = Math.min(1, windowWidth / 1200);
+                resourceMonitor.style.transform = `scale(${0.6 * scale}, ${0.6 * scale})`;
+                resourceMonitor.style.left = `${-34 * scale}px`;
+            }
+
+            // 6. Adjust traffic lights and window controls
+            const trafficBtns = document.querySelectorAll('.traffic-btn');
+            trafficBtns.forEach(btn => {
+                const scale = Math.min(1, windowWidth / 1200);
+                btn.style.width = `${12 * scale}px`;
+                btn.style.height = `${12 * scale}px`;
+            });
+
+            // 7. Update all iframe containers to match new window sizes
+            updateIframeContainers();
+        }
+
+        // Helper function to update iframe containers
+        function updateIframeContainers() {
+            windows.forEach(windowObj => {
+                if (windowObj && windowObj.iframe) {
+                    const iframe = windowObj.iframe;
+                    const container = iframe.closest('.iframe-container');
+
+                    if (container) {
+                        const containerWidth = container.clientWidth;
+                        const containerHeight = container.clientHeight;
+
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+                    }
+                }
+            });
+        }
+
+        // Initialize responsive behavior on load
+        window.addEventListener('load', () => {
+            handleWindowResize();
+
+            // Also handle window resize with debouncing
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(handleWindowResize, 250);
+            });
+        });
+
+        // Call the function initially
+        handleWindowResize();
+    </script>
 </body>
 
 </html>
