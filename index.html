@@ -177,7 +177,7 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            cursor: pointer;
+            cursor: default;
             transition: all 0.2s;
         }
 
@@ -239,7 +239,7 @@
             border: none;
             padding: 3px;
             border-radius: 6px;
-            cursor: pointer;
+            cursor: default;
             font-size: 10px;
             transition: all 0.2s;
             display: flex;
@@ -536,7 +536,7 @@
             <img id="apple" class="h-4 filter-invert z-500000"
                 src="https://img.icons8.com/ios-filled/50/ffffff/mac-os.png" alt="apple_icon">
             <div id="finder" class="relative">
-                <span id="app_title" class="font-semibold cursor-pointer text-white" id="menuTitle">Finder</span>
+                <span id="app_title" class="font-semibold cursor-default text-white" id="menuTitle">Finder</span>
             </div>
         </div>
         <div class="flex flex-row justify-end items-center space-x-3">
@@ -651,7 +651,7 @@
                     dropdown.appendChild(separator);
                 } else {
                     const menuItem = document.createElement('div');
-                    menuItem.className = 'px-4 py-2 hover:bg-blue-500 hover:text-white cursor-pointer transition-colors text-sm text-black';
+                    menuItem.className = 'px-4 py-2 hover:bg-blue-500 hover:text-white cursor-default transition-colors text-sm text-black';
                     menuItem.textContent = item.text;
                     menuItem.addEventListener('click', (e) => {
                         e.stopPropagation(); // Prevent closing dropdown
