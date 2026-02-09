@@ -2284,23 +2284,26 @@
                 const originalPadding = "10px 20px"; // From your CSS: padding: 10px 20px;
                 const originalGap = "15px"; // From your CSS: gap: 15px;
                 const originalBorderRadius = 20; // From your CSS: border-radius: 20px;
-
+                const originalImageBorderRadius = 10;
                 // Determine size based on breakpoints (no animations)
-                let imageSize, paddingValue, gapValue;
+                let imageSize, imageBorderRadius, paddingValue, gapValue;
 
                 if (windowWidth > 768) {
                     // Large/Medium screens: use original CSS values (exactly like before)
                     imageSize = originalImageSize;
+                    imageBorderRadius = originalImageBorderRadius;
                     paddingValue = originalPadding;
                     gapValue = originalGap;
                 } else if (windowWidth > 550) {
                     // Small tablets: slightly smaller than original
                     imageSize = 45; // 5px smaller than original
+                    imageBorderRadius = 8;
                     paddingValue = "8px 16px"; // Slightly reduced padding
                     gapValue = "12px"; // Slightly reduced gap
                 } else {
                     // Mobile screens (≤ 550px): significantly smaller
                     imageSize = 40; // 10px smaller than original
+                    imageBorderRadius = 4;
                     paddingValue = "6px 12px"; // More reduced padding
                     gapValue = "8px"; // More reduced gap
                 }
@@ -2312,7 +2315,7 @@
                     img.style.height = `${imageSize}px`;
                     // Ensure images maintain their aspect ratio and border radius
                     img.style.objectFit = 'contain';
-                    img.style.borderRadius = '10px'; // From your CSS: border-radius: 10px;
+                    img.style.borderRadius = `${imageBorderRadius}px`;
                 });
 
                 // Calculate total dock width including items
@@ -2347,6 +2350,7 @@
                     dockImages.forEach(img => {
                         img.style.width = `${Math.max(30, scaledImageSize)}px`; // Minimum 30px
                         img.style.height = `${Math.max(30, scaledImageSize)}px`;
+                        img.style.borderRadius = `${Math.max(10, 10 * scaleFactor)}px`;
                     });
 
                     // Update dock styles
@@ -2369,7 +2373,7 @@
                     // Mobile screens (≤ 550px): significantly smaller
                     calculatedRadius = 12;
                 }
-                console.log(windowWidth, calculatedRadius, originalBorderRadius)
+                //console.log(windowWidth, calculatedRadius, originalBorderRadius)
                 // Use the calculated radius
                 dock.style.borderRadius = `${calculatedRadius}px`;
 
