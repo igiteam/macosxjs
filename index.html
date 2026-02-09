@@ -2316,6 +2316,7 @@
                     // Ensure images maintain their aspect ratio and border radius
                     img.style.objectFit = 'contain';
                     img.style.borderRadius = `${imageBorderRadius}px`;
+                    console.log(`${imageBorderRadius}px`, originalImageBorderRadius);
                 });
 
                 // Calculate total dock width including items
@@ -2353,6 +2354,7 @@
                         img.style.height = `${Math.max(30, scaledImageSize)}px`;
                         img.style.borderRadius = `${scaledImageBorderRadius}px`;
                     });
+
 
                     // Update dock styles
                     dock.style.padding = `${scaledPaddingY}px ${scaledPaddingX}px`;
