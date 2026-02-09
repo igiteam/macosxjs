@@ -2357,13 +2357,13 @@
                 // (max, originalBorderRadius, originalBorderRadius - shrink/2)
                 let calculatedRadius = originalBorderRadius; // Start with original
 
-                if (windowWidth > 768) {
+                if (windowWidth > 1240) {
                     // Large/Medium screens: use original CSS values (exactly like before)
                     calculatedRadius = originalBorderRadius; // 20px
                 } else if (windowWidth > 550) {
                     // Small tablets: calculate between 13-15px based on exact width
                     // Map windowWidth from 551-768 to radius 13-15
-                    const scale = (windowWidth - 551) / (768 - 551); // 0 to 1
+                    const scale = (windowWidth - 551) / (1240 - 551); // 0 to 1
                     calculatedRadius = 13 + Math.round(scale * 2); // 13, 14, or 15
                 } else {
                     // Mobile screens (≤ 550px): significantly smaller
