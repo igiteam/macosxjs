@@ -2257,188 +2257,199 @@
     </script>
     <script>
         // Fix dock and images to shrink respectively with width
-        window.addEventListener('resize', handleWindowResize);
+        (function () {
+            let resizeTimeout;
 
-        function handleWindowResize() {
-            const windowWidth = window.innerWidth;
+            function handleWindowResize() {
+                const windowWidth = window.innerWidth;
 
-            // 1. Adjust dock scaling based on window width
-            const dock = document.getElementById('macDock');
-            if (dock) {
-                const dockItems = dock.querySelectorAll('li');
-                const dockImages = dock.querySelectorAll('img');
+                // 1. Adjust dock scaling based on window width
+                const dock = document.getElementById('macDock');
+                if (dock) {
+                    const dockItems = dock.querySelectorAll('li');
+                    const dockImages = dock.querySelectorAll('img');
 
-                // Store original values from CSS
-                const originalImageSize = 50; // From your CSS: width: 50px; height: 50px;
-                const originalPadding = "10px 20px"; // From your CSS: padding: 10px 20px;
-                const originalGap = "15px"; // From your CSS: gap: 15px;
-                const originalBorderRadius = "20px"; // From your CSS: border-radius: 20px;
+                    // Store original values from CSS
+                    const originalImageSize = 50; // From your CSS: width: 50px; height: 50px;
+                    const originalPadding = "10px 20px"; // From your CSS: padding: 10px 20px;
+                    const originalGap = "15px"; // From your CSS: gap: 15px;
+                    const originalBorderRadius = "20px"; // From your CSS: border-radius: 20px;
 
-                // Determine size based on breakpoints (no animations)
-                let imageSize, paddingValue, gapValue, borderRadiusValue;
+                    // Determine size based on breakpoints (no animations)
+                    let imageSize, paddingValue, gapValue;
 
-                if (windowWidth > 768) {
-                    // Large/Medium screens: use original CSS values (exactly like before)
-                    imageSize = originalImageSize;
-                    paddingValue = originalPadding;
-                    gapValue = originalGap;
-                    borderRadiusValue = originalBorderRadius;
-                } else if (windowWidth > 550) {
-                    // Small tablets: slightly smaller than original
-                    imageSize = 45; // 5px smaller than original
-                    paddingValue = "8px 16px"; // Slightly reduced padding
-                    gapValue = "12px"; // Slightly reduced gap
-                    borderRadiusValue = "18px"; // Slightly smaller border radius
-                } else {
-                    // Mobile screens (≤ 550px): significantly smaller
-                    imageSize = 40; // 10px smaller than original
-                    paddingValue = "6px 12px"; // More reduced padding
-                    gapValue = "8px"; // More reduced gap
-                    borderRadiusValue = "16px"; // Smaller border radius
-                }
+                    if (windowWidth > 768) {
+                        // Large/Medium screens: use original CSS values (exactly like before)
+                        imageSize = originalImageSize;
+                        paddingValue = originalPadding;
+                        gapValue = originalGap;
+                    } else if (windowWidth > 550) {
+                        // Small tablets: slightly smaller than original
+                        imageSize = 45; // 5px smaller than original
+                        paddingValue = "8px 16px"; // Slightly reduced padding
+                        gapValue = "12px"; // Slightly reduced gap
+                    } else {
+                        // Mobile screens (≤ 550px): significantly smaller
+                        imageSize = 40; // 10px smaller than original
+                        paddingValue = "6px 12px"; // More reduced padding
+                        gapValue = "8px"; // More reduced gap
+                    }
 
-                // Apply sizes to dock images (no transition)
-                dockImages.forEach(img => {
-                    img.style.transition = 'none';
-                    img.style.width = `${imageSize}px`;
-                    img.style.height = `${imageSize}px`;
-                    // Ensure images maintain their aspect ratio and border radius
-                    img.style.objectFit = 'contain';
-                    img.style.borderRadius = '10px'; // From your CSS: border-radius: 10px;
-                });
-
-                // Calculate total dock width including items
-                const totalItems = dockItems.length;
-                const totalGapWidth = (totalItems - 1) * parseInt(gapValue);
-                const totalItemsWidth = totalItems * imageSize;
-                const totalPaddingWidth = 2 * parseInt(paddingValue.split(' ')[1]); // Right and left padding
-                const totalDockWidth = totalItemsWidth + totalGapWidth + totalPaddingWidth;
-
-                // Calculate available space (window width minus minimum margins)
-                const minMargin = 20; // Minimum 20px margin on each side
-                const availableWidth = windowWidth - (minMargin * 2);
-
-                // Apply styles to dock with minimum margins
-                dock.style.transition = 'none';
-                dock.style.padding = paddingValue;
-                dock.style.gap = gapValue;
-                dock.style.borderRadius = borderRadiusValue;
-
-                // Ensure dock doesn't exceed available space
-                if (totalDockWidth > availableWidth) {
-                    // Scale down the dock to fit within margins
-                    const scaleFactor = availableWidth / totalDockWidth;
-
-                    // Apply scaled values
-                    const scaledImageSize = Math.floor(imageSize * scaleFactor);
-                    const scaledGap = Math.floor(parseInt(gapValue) * scaleFactor);
-                    const scaledPaddingX = Math.floor(parseInt(paddingValue.split(' ')[1]) * scaleFactor);
-                    const scaledPaddingY = Math.floor(parseInt(paddingValue.split(' ')[0]) * scaleFactor);
-
-                    // Update image sizes
+                    // Apply sizes to dock images (no transition)
                     dockImages.forEach(img => {
-                        img.style.width = `${Math.max(30, scaledImageSize)}px`; // Minimum 30px
-                        img.style.height = `${Math.max(30, scaledImageSize)}px`;
+                        img.style.transition = 'none';
+                        img.style.width = `${imageSize}px`;
+                        img.style.height = `${imageSize}px`;
+                        // Ensure images maintain their aspect ratio and border radius
+                        img.style.objectFit = 'contain';
+                        img.style.borderRadius = '10px'; // From your CSS: border-radius: 10px;
                     });
 
-                    // Update dock styles
-                    dock.style.padding = `${scaledPaddingY}px ${scaledPaddingX}px`;
-                    dock.style.gap = `${scaledGap}px`;
+                    // Calculate total dock width including items
+                    const totalItems = dockItems.length;
+                    const totalGapWidth = (totalItems - 1) * parseInt(gapValue);
+                    const totalItemsWidth = totalItems * imageSize;
+                    const paddingParts = paddingValue.split(' ');
+                    const paddingX = parseInt(paddingParts[1] || paddingParts[0]);
+                    const totalPaddingWidth = 2 * paddingX;
+                    const totalDockWidth = totalItemsWidth + totalGapWidth + totalPaddingWidth;
+
+                    // Calculate available space (window width minus minimum margins)
+                    const minMargin = 20; // Minimum 20px margin on each side
+                    const availableWidth = windowWidth - (minMargin * 2);
+
+                    // Apply styles to dock with minimum margins
+                    dock.style.transition = 'none';
+                    dock.style.padding = paddingValue;
+                    dock.style.gap = gapValue;
+
+                    // KEEP ORIGINAL BORDER RADIUS - ALWAYS 20px from your CSS
+                    dock.style.borderRadius = originalBorderRadius; // Always 20px
+
+                    // Ensure dock doesn't exceed available space
+                    if (totalDockWidth > availableWidth) {
+                        // Scale down the dock to fit within margins
+                        const scaleFactor = availableWidth / totalDockWidth;
+
+                        // Apply scaled values
+                        const scaledImageSize = Math.floor(imageSize * scaleFactor);
+                        const scaledGap = Math.floor(parseInt(gapValue) * scaleFactor);
+                        const scaledPaddingX = Math.floor(paddingX * scaleFactor);
+                        const scaledPaddingY = Math.floor(parseInt(paddingParts[0]) * scaleFactor);
+
+                        // Update image sizes (minimum 30px)
+                        const finalImageSize = Math.max(30, scaledImageSize);
+                        dockImages.forEach(img => {
+                            img.style.width = `${finalImageSize}px`;
+                            img.style.height = `${finalImageSize}px`;
+                        });
+
+                        // Update dock styles
+                        dock.style.padding = `${scaledPaddingY}px ${scaledPaddingX}px`;
+                        dock.style.gap = `${scaledGap}px`;
+                    }
+
+                    // Always ensure minimum 20px margins on both sides
+                    dock.style.marginLeft = `${minMargin}px`;
+                    dock.style.marginRight = `${minMargin}px`;
+
+                    // Adjust tooltip positions for smaller images
+                    const tooltips = dock.querySelectorAll('li span');
+                    const currentImageSize = parseInt(dockImages[0]?.style.width || imageSize);
+                    tooltips.forEach(span => {
+                        // Update tooltip position based on image size
+                        span.style.bottom = `${currentImageSize + 20}px`; // 20px above the image
+                    });
+
+                    // Keep hover animation but not resize animation
+                    dockItems.forEach(item => {
+                        item.style.transition = 'transform 0.3s ease';
+                    });
                 }
 
-                // Always ensure minimum 20px margins on both sides
-                dock.style.marginLeft = `${minMargin}px`;
-                dock.style.marginRight = `${minMargin}px`;
+                // 2. Adjust window sizes and positions (no animation)
+                if (typeof windows !== 'undefined') {
+                    windows.forEach(windowObj => {
+                        if (windowObj && windowObj.element && !windowObj.isMaximized) {
+                            const winElement = windowObj.element;
+                            winElement.style.transition = 'none'; // Disable transition during resize
 
-                // Adjust tooltip positions for smaller images
-                const tooltips = dock.querySelectorAll('li span');
-                const currentImageSize = parseInt(dockImages[0]?.style.width || imageSize);
-                tooltips.forEach(span => {
-                    // Update tooltip position based on image size
-                    span.style.bottom = `${currentImageSize + 20}px`; // 20px above the image
-                });
+                            const computedStyle = getComputedStyle(winElement);
 
-                // Keep hover animation but not resize animation
-                dockItems.forEach(item => {
-                    item.style.transition = 'transform 0.3s ease';
-                });
+                            // Get current position and size as percentages
+                            const currentLeft = parseInt(computedStyle.left) || 0;
+                            const currentTop = parseInt(computedStyle.top) || 0;
+                            const currentWidth = parseInt(computedStyle.width) || 700;
+                            const currentHeight = parseInt(computedStyle.height) || 500;
+
+                            // Calculate percentage of screen
+                            const widthPercent = currentWidth / window.innerWidth;
+                            const leftPercent = currentLeft / window.innerWidth;
+                            const heightPercent = currentHeight / window.innerHeight;
+                            const topPercent = currentTop / window.innerHeight;
+
+                            // Apply new sizes maintaining proportions
+                            const newWidth = Math.max(400, windowWidth * widthPercent * 0.95);
+                            const newLeft = Math.max(0, windowWidth * leftPercent);
+                            const newHeight = Math.max(300, window.innerHeight * heightPercent * 0.95);
+                            const newTop = Math.max(30, window.innerHeight * topPercent);
+
+                            winElement.style.width = `${newWidth}px`;
+                            winElement.style.left = `${newLeft}px`;
+                            winElement.style.height = `${newHeight}px`;
+                            winElement.style.top = `${newTop}px`;
+
+                            // Update original position for restore functionality
+                            windowObj.originalPosition = {
+                                width: newWidth,
+                                height: newHeight,
+                                left: newLeft,
+                                top: newTop
+                            };
+                        }
+                    });
+
+                    // 3. Update all iframe containers to match new window sizes
+                    updateIframeContainers();
+                }
             }
 
-            // 2. Adjust window sizes and positions (no animation)
-            windows.forEach(windowObj => {
-                if (windowObj && windowObj.element && !windowObj.isMaximized) {
-                    const winElement = windowObj.element;
-                    winElement.style.transition = 'none'; // Disable transition during resize
+            // Helper function to update iframe containers
+            function updateIframeContainers() {
+                if (typeof windows !== 'undefined') {
+                    windows.forEach(windowObj => {
+                        if (windowObj && windowObj.iframe) {
+                            const iframe = windowObj.iframe;
+                            const container = iframe.closest('.iframe-container');
 
-                    const computedStyle = getComputedStyle(winElement);
-
-                    // Get current position and size as percentages
-                    const currentLeft = parseInt(computedStyle.left) || 0;
-                    const currentTop = parseInt(computedStyle.top) || 0;
-                    const currentWidth = parseInt(computedStyle.width) || 700;
-                    const currentHeight = parseInt(computedStyle.height) || 500;
-
-                    // Calculate percentage of screen
-                    const widthPercent = currentWidth / window.innerWidth;
-                    const leftPercent = currentLeft / window.innerWidth;
-                    const heightPercent = currentHeight / window.innerHeight;
-                    const topPercent = currentTop / window.innerHeight;
-
-                    // Apply new sizes maintaining proportions
-                    const newWidth = Math.max(400, windowWidth * widthPercent * 0.95);
-                    const newLeft = Math.max(0, windowWidth * leftPercent);
-                    const newHeight = Math.max(300, window.innerHeight * heightPercent * 0.95);
-                    const newTop = Math.max(30, window.innerHeight * topPercent);
-
-                    winElement.style.width = `${newWidth}px`;
-                    winElement.style.left = `${newLeft}px`;
-                    winElement.style.height = `${newHeight}px`;
-                    winElement.style.top = `${newTop}px`;
-
-                    // Update original position for restore functionality
-                    windowObj.originalPosition = {
-                        width: newWidth,
-                        height: newHeight,
-                        left: newLeft,
-                        top: newTop
-                    };
+                            if (container) {
+                                iframe.style.transition = 'none';
+                                iframe.style.width = '100%';
+                                iframe.style.height = '100%';
+                            }
+                        }
+                    });
                 }
+            }
+
+            // Initialize automatically
+            window.addEventListener('load', () => {
+                handleWindowResize();
             });
 
-            // 3. Update all iframe containers to match new window sizes
-            updateIframeContainers();
-        }
-
-        // Helper function to update iframe containers
-        function updateIframeContainers() {
-            windows.forEach(windowObj => {
-                if (windowObj && windowObj.iframe) {
-                    const iframe = windowObj.iframe;
-                    const container = iframe.closest('.iframe-container');
-
-                    if (container) {
-                        iframe.style.transition = 'none';
-                        iframe.style.width = '100%';
-                        iframe.style.height = '100%';
-                    }
-                }
-            });
-        }
-
-        // Initialize responsive behavior on load
-        window.addEventListener('load', () => {
-            handleWindowResize();
-
-            // Also handle window resize with debouncing
-            let resizeTimeout;
+            // Run on resize with debouncing
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(handleWindowResize, 100); // Shorter delay for more responsive feel
+                resizeTimeout = setTimeout(handleWindowResize, 100);
             });
-        });
 
-        // Call the function initially
-        handleWindowResize();
+            // Also run immediately (in case script loads after DOM is ready)
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', handleWindowResize);
+            } else {
+                handleWindowResize();
+            }
+        })();
     </script>
 </body>
 
