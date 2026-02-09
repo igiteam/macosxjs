@@ -2268,44 +2268,60 @@
                 const dockItems = dock.querySelectorAll('li');
                 const dockImages = dock.querySelectorAll('img');
 
-                // Calculate scale factor based on window width
-                // Base reference width: 1920px (full HD)
-                const baseWidth = 1920;
-                const scaleFactor = Math.min(1, windowWidth / baseWidth);
+                // Determine size based on breakpoints (no animations)
+                let imageSize, paddingValue, gapValue, borderRadiusValue;
 
-                // Apply scaling to dock items
-                dockItems.forEach(item => {
-                    // Adjust spacing between items
-                    item.style.transform = 'scale(1)'; // Reset transform for calculation
+                if (windowWidth > 1200) {
+                    // Large screens: bigger dock
+                    imageSize = 60;
+                    paddingValue = "25px 35px";
+                    gapValue = "18px";
+                    borderRadiusValue = "22px";
+                } else if (windowWidth > 768) {
+                    // Medium screens: standard size
+                    imageSize = 50;
+                    paddingValue = "20px 30px";
+                    gapValue = "15px";
+                    borderRadiusValue = "20px";
+                } else if (windowWidth > 550) {
+                    // Small screens: slightly smaller
+                    imageSize = 45;
+                    paddingValue = "15px 25px";
+                    gapValue = "12px";
+                    borderRadiusValue = "18px";
+                } else {
+                    // Very small screens (mobile): smaller dock
+                    imageSize = 40;
+                    paddingValue = "12px 20px";
+                    gapValue = "10px";
+                    borderRadiusValue = "16px";
+                }
 
-                    // Adjust the base scale of dock items
-                    const baseScale = 0.9 + (scaleFactor * 0.2); // Scale between 0.9 and 1.1
-                    item.style.setProperty('--dock-scale', baseScale);
-                });
-
-                // Adjust dock image sizes
-                const baseImageSize = 50; // Original 50px
-                const newImageSize = Math.max(30, Math.min(baseImageSize, baseImageSize * scaleFactor));
-
+                // Apply sizes to dock images (no transition)
                 dockImages.forEach(img => {
-                    img.style.width = `${newImageSize}px`;
-                    img.style.height = `${newImageSize}px`;
+                    img.style.transition = 'none';
+                    img.style.width = `${imageSize}px`;
+                    img.style.height = `${imageSize}px`;
                 });
 
-                // Adjust dock padding and gap
-                const basePadding = 20;
-                const baseGap = 15;
-                dock.style.padding = `${basePadding * scaleFactor}px ${basePadding * 1.5 * scaleFactor}px`;
-                dock.style.gap = `${baseGap * scaleFactor}px`;
+                // Apply styles to dock
+                dock.style.transition = 'none';
+                dock.style.padding = paddingValue;
+                dock.style.gap = gapValue;
+                dock.style.borderRadius = borderRadiusValue;
 
-                // Adjust dock border radius
-                dock.style.borderRadius = `${20 * scaleFactor}px`;
+                // Remove any existing transform styles to prevent animation
+                dockItems.forEach(item => {
+                    item.style.transition = 'transform 0.3s ease'; // Keep hover animation but not resize animation
+                });
             }
 
-            // 2. Adjust window sizes and positions
+            // 2. Adjust window sizes and positions (no animation)
             windows.forEach(windowObj => {
                 if (windowObj && windowObj.element && !windowObj.isMaximized) {
                     const winElement = windowObj.element;
+                    winElement.style.transition = 'none'; // Disable transition during resize
+
                     const computedStyle = getComputedStyle(winElement);
 
                     // Get current position and size as percentages
@@ -2341,44 +2357,8 @@
                 }
             });
 
-            // 3. Adjust menu bar items
-            // const menuBar = document.querySelector('.w-full.h-6.px-4.fixed.top-0');
-            // if (menuBar) {
-            //     const scale = Math.min(1, windowWidth / 1200);
-            //     menuBar.style.paddingLeft = `${10 * scale}px`;
-            //     menuBar.style.paddingRight = `${10 * scale}px`;
-            //     menuBar.style.fontSize = `${12 * scale}px`;
-            // }
-
-            // 4. Adjust add window button
-            // const addWindowBtn = document.getElementById('addWindowBtn');
-            // if (addWindowBtn) {
-            //     const scale = Math.min(1, windowWidth / 1200);
-            //     addWindowBtn.style.fontSize = `${13 * scale}px`;
-            //     addWindowBtn.style.padding = `${10 * scale}px ${16 * scale}px`;
-            //     addWindowBtn.style.right = `${20 * scale}px`;
-            // }
-
             // 7. Update all iframe containers to match new window sizes
             updateIframeContainers();
-
-            // 5. Adjust resource monitor
-            // const resourceMonitor = document.getElementById('resourceMonitor');
-            // if (resourceMonitor) {
-            //     const scale = Math.min(1, windowWidth / 1200);
-            //     resourceMonitor.style.transform = `scale(${0.6 * scale}, ${0.6 * scale})`;
-            //     resourceMonitor.style.left = `${-34 * scale}px`;
-            // }
-
-            // 6. Adjust traffic lights and window controls
-            // const trafficBtns = document.querySelectorAll('.traffic-btn');
-            // trafficBtns.forEach(btn => {
-            //     const scale = Math.min(1, windowWidth / 1200);
-            //     btn.style.width = `${12 * scale}px`;
-            //     btn.style.height = `${12 * scale}px`;
-            // });
-
-
         }
 
         // Helper function to update iframe containers
@@ -2389,9 +2369,7 @@
                     const container = iframe.closest('.iframe-container');
 
                     if (container) {
-                        const containerWidth = container.clientWidth;
-                        const containerHeight = container.clientHeight;
-
+                        iframe.style.transition = 'none';
                         iframe.style.width = '100%';
                         iframe.style.height = '100%';
                     }
@@ -2407,7 +2385,7 @@
             let resizeTimeout;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(handleWindowResize, 250);
+                resizeTimeout = setTimeout(handleWindowResize, 100); // Shorter delay for more responsive feel
             });
         });
 
