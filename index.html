@@ -2314,8 +2314,9 @@
                     img.style.width = `${imageSize}px`;
                     img.style.height = `${imageSize}px`;
                     // Ensure images maintain their aspect ratio and border radius
-                    img.style.objectFit = 'fill';
+                    img.style.objectFit = 'contain';
                     img.style.borderRadius = `${imageBorderRadius}px`;
+                    img.style.scale = transform(imageSize, imageSize);
                     console.log(`${imageBorderRadius}px`, originalImageBorderRadius);
                     img.style.border = '1px solid red';
                 });
