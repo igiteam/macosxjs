@@ -2268,33 +2268,33 @@
                 const dockItems = dock.querySelectorAll('li');
                 const dockImages = dock.querySelectorAll('img');
 
+                // Store original values from CSS
+                const originalImageSize = 50; // From your CSS: width: 50px; height: 50px;
+                const originalPadding = "10px 20px"; // From your CSS: padding: 10px 20px;
+                const originalGap = "15px"; // From your CSS: gap: 15px;
+                const originalBorderRadius = "20px"; // From your CSS: border-radius: 20px;
+
                 // Determine size based on breakpoints (no animations)
                 let imageSize, paddingValue, gapValue, borderRadiusValue;
 
-                if (windowWidth > 1200) {
-                    // Large screens: bigger dock
-                    imageSize = 60;
-                    paddingValue = "25px 35px";
-                    gapValue = "18px";
-                    borderRadiusValue = "22px";
-                } else if (windowWidth > 768) {
-                    // Medium screens: standard size
-                    imageSize = 50;
-                    paddingValue = "20px 30px";
-                    gapValue = "15px";
-                    borderRadiusValue = "20px";
+                if (windowWidth > 768) {
+                    // Large/Medium screens: use original CSS values (exactly like before)
+                    imageSize = originalImageSize;
+                    paddingValue = originalPadding;
+                    gapValue = originalGap;
+                    borderRadiusValue = originalBorderRadius;
                 } else if (windowWidth > 550) {
-                    // Small screens: slightly smaller
-                    imageSize = 45;
-                    paddingValue = "15px 25px";
-                    gapValue = "12px";
-                    borderRadiusValue = "18px";
+                    // Small tablets: slightly smaller than original
+                    imageSize = 45; // 5px smaller than original
+                    paddingValue = "8px 16px"; // Slightly reduced padding
+                    gapValue = "12px"; // Slightly reduced gap
+                    borderRadiusValue = "18px"; // Slightly smaller border radius
                 } else {
-                    // Very small screens (mobile): smaller dock
-                    imageSize = 40;
-                    paddingValue = "12px 20px";
-                    gapValue = "10px";
-                    borderRadiusValue = "16px";
+                    // Mobile screens (≤ 550px): significantly smaller
+                    imageSize = 40; // 10px smaller than original
+                    paddingValue = "6px 12px"; // More reduced padding
+                    gapValue = "8px"; // More reduced gap
+                    borderRadiusValue = "16px"; // Smaller border radius
                 }
 
                 // Apply sizes to dock images (no transition)
@@ -2302,6 +2302,9 @@
                     img.style.transition = 'none';
                     img.style.width = `${imageSize}px`;
                     img.style.height = `${imageSize}px`;
+                    // Ensure images maintain their aspect ratio and border radius
+                    img.style.objectFit = 'contain';
+                    img.style.borderRadius = '10px'; // From your CSS: border-radius: 10px;
                 });
 
                 // Apply styles to dock
@@ -2310,9 +2313,19 @@
                 dock.style.gap = gapValue;
                 dock.style.borderRadius = borderRadiusValue;
 
-                // Remove any existing transform styles to prevent animation
+                // Adjust tooltip positions for smaller images
+                const tooltips = dock.querySelectorAll('li span');
+                tooltips.forEach(span => {
+                    // Update tooltip position based on image size
+                    span.style.bottom = `${imageSize + 20}px`; // 20px above the image
+                });
+
+                // Keep hover animation but not resize animation
                 dockItems.forEach(item => {
-                    item.style.transition = 'transform 0.3s ease'; // Keep hover animation but not resize animation
+                    item.style.transition = 'transform 0.3s ease';
+                    // Update hover scale to maintain proportion with image size
+                    const scaleFactor = imageSize / originalImageSize;
+                    item.style.setProperty('--hover-scale', 1.2 * scaleFactor);
                 });
             }
 
@@ -2357,7 +2370,7 @@
                 }
             });
 
-            // 7. Update all iframe containers to match new window sizes
+            // 3. Update all iframe containers to match new window sizes
             updateIframeContainers();
         }
 
