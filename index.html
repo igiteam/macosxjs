@@ -2353,23 +2353,25 @@
                     dock.style.padding = `${scaledPaddingY}px ${scaledPaddingX}px`;
                     dock.style.gap = `${scaledGap}px`;
                 }
-                // Recalculate border radius for scaled dock
-                var calculatedRadius = originalBorderRadius;
                 // FIXED: Calculate border radius based on your formula
                 // (max, originalBorderRadius, originalBorderRadius - shrink/2)
+                let calculatedRadius = originalBorderRadius; // Start with original
+
                 if (windowWidth > 768) {
                     // Large/Medium screens: use original CSS values (exactly like before)
-                    calculatedRadius = originalBorderRadius;
+                    calculatedRadius = originalBorderRadius; // 20px
                 } else if (windowWidth > 550) {
-                    // Small tablets: slightly smaller than original
-                    calculatedRadius = 13;
+                    // Small tablets: calculate between 13-15px based on exact width
+                    // Map windowWidth from 551-768 to radius 13-15
+                    const scale = (windowWidth - 551) / (768 - 551); // 0 to 1
+                    calculatedRadius = 13 + Math.round(scale * 2); // 13, 14, or 15
                 } else {
                     // Mobile screens (≤ 550px): significantly smaller
                     calculatedRadius = 12;
                 }
-                // Use the calculated radius (will be originalBorderRadius or very close to it)
-                dock.style.borderRadius = `${calculatedRadius}px`;
 
+                // Use the calculated radius
+                dock.style.borderRadius = `${calculatedRadius}px`;
 
                 // Always ensure minimum 20px margins on both sides
                 dock.style.marginLeft = `${minMargin}px`;
