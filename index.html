@@ -2331,17 +2331,21 @@
                 dock.style.padding = paddingValue;
                 dock.style.gap = gapValue;
 
+                var calculatedRadius = originalBorderRadius;
                 // FIXED: Calculate border radius based on your formula
                 // (max, originalBorderRadius, originalBorderRadius - shrink/2)
-                const shrinkFactor = (originalImageSize - imageSize) / originalImageSize; // How much smaller than original
-                const shrinkAmount = (shrinkFactor);
-                const calculatedRadius = Math.max(
-                    originalBorderRadius, // max
-                    originalBorderRadius * shrinkAmount // originalBorderRadius - shrink/2
-                );
+                if (windowWidth > 768) {
+                    // Large/Medium screens: use original CSS values (exactly like before)
+                    calculatedRadius = originalBorderRadius;
+                } else if (windowWidth > 550) {
+                    // Small tablets: slightly smaller than original
+                    calculatedRadius = originalBorderRadius - 2;
+                } else {
+                    // Mobile screens (≤ 550px): significantly smaller
+                    calculatedRadius = originalBorderRadius - 4;
+                }
                 // Use the calculated radius (will be originalBorderRadius or very close to it)
                 dock.style.borderRadius = `${calculatedRadius}px`;
-                console.log(originalBorderRadius, calculatedRadius, shrinkFactor);
 
                 // Ensure dock doesn't exceed available space
                 if (totalDockWidth > availableWidth) {
