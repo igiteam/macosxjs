@@ -1,6 +1,20 @@
 plugins = []
 headers = []
-redirects = []
+# Site ID
+[site]
+  id = "6df47b6f-6792-4a74-8bb0-e2f4c41d2651"
+
+# Build settings
+[build]
+  # This should be relative to your project root!
+  publish = "dist"  # or "build" or whatever your build folder is
+  command = "npm run build"
+
+# Add some redirects for SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [functions]
 
