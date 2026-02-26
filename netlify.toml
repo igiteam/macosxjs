@@ -1,17 +1,15 @@
-# FORCE Netlify to use these exact settings
+# For a simple static HTML site (no build needed)
 [site]
   id = "6df47b6f-6792-4a74-8bb0-e2f4c41d2651"
   name = "macosxjs"
 
 [build]
-  command = "npm run build"
-  publish = "dist"
-  base = "/"
+  # NO build command needed for static HTML
+  command = "echo 'Static site - no build required'"
+  # Point directly to the folder containing your index.html
+  publish = "."
 
-# Explicitly disable any UI overrides
-[settings]
-  inherit = false
-
+# Optional: Add redirects if needed
 [[redirects]]
   from = "/*"
   to = "/index.html"
