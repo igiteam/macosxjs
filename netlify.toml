@@ -1,0 +1,18 @@
+# FORCE Netlify to use these exact settings
+[site]
+  id = "6df47b6f-6792-4a74-8bb0-e2f4c41d2651"
+  name = "macosxjs"
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  base = "/"
+
+# Explicitly disable any UI overrides
+[settings]
+  inherit = false
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
