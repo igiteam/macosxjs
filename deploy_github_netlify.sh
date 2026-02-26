@@ -7,4 +7,4 @@ npm -v
 git add .
 git commit -m 'netlify deploy --prod'
 git push
-netlify deploy --prod
+netlify deploy --prod --site 6df47b6f-6792-4a74-8bb0-e2f4c41d2651
