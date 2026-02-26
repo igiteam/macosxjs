@@ -1,39 +1,31 @@
-plugins = []
-headers = []
-# Site ID
+# Force Netlify to use these settings
 [site]
   id = "6df47b6f-6792-4a74-8bb0-e2f4c41d2651"
+  name = "macosxjs"
 
-# Build settings
 [build]
-  # This should be relative to your project root!
-  publish = "dist"  # or "build" or whatever your build folder is
+  # Force these settings
   command = "npm run build"
+  publish = "dist"
+  base = "/"
 
-# Add some redirects for SPA
+# Disable any UI settings overriding
+[settings]
+  # Don't inherit from UI
+  inherit = false
+
+# Explicit build environment
+[build.environment]
+  NPM_FLAGS = "--legacy-peer-deps"
+  CI = "false"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-[functions]
-
-[functions."*"]
-
-[build]
-publish = "/Users/gabrielmajorsky/Documents/__________win10dev.xyz/zzzzzzzzzz_game-source-code/igiteam.github.com/macosxjs"
-publishOrigin = "default"
-
-[build.environment]
-
-[build.processing]
-
-[build.processing.css]
-
-[build.processing.html]
-
-[build.processing.images]
-
-[build.processing.js]
-
-[build.services]
+# Add headers to ensure proper caching
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
