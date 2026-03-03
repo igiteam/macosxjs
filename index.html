@@ -52,8 +52,24 @@
             filter: invert();
         }
 
-        /* Enhanced Dock Styles */
+        /* Update the dock container positioning */
+        .dock-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+            padding-left: max(8px, env(safe-area-inset-left, 8px));
+            padding-right: max(8px, env(safe-area-inset-right, 8px));
+            z-index: 99999999;
+            pointer-events: none;
+        }
+
+        /* Make the dock itself pointer-events auto */
         ul.osx-dock {
+            pointer-events: auto;
             padding: 10px 20px;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
@@ -64,6 +80,64 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 100;
             position: relative;
+            margin: 0 auto;
+            max-width: calc(100vw - 40px);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            /* Hide scrollbar Firefox */
+            -ms-overflow-style: none;
+            /* Hide scrollbar IE/Edge */
+        }
+
+        /* Hide scrollbar for Chrome/Safari */
+        ul.osx-dock::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Adjust for mobile */
+        @media (max-width: 768px) {
+            ul.osx-dock {
+                padding: 8px 16px;
+                gap: 12px;
+                border-radius: 16px;
+            }
+
+            ul.osx-dock li img {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            ul.osx-dock {
+                padding: 6px 12px;
+                gap: 8px;
+                border-radius: 14px;
+            }
+
+            ul.osx-dock li img {
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+        /* Ensure tooltips are positioned correctly on mobile */
+        ul.osx-dock li span {
+            bottom: 80px;
+            /* Increased to account for mobile bottom area */
+            font-size: 11px;
+            white-space: nowrap;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 768px) {
+            ul.osx-dock li span {
+                bottom: 70px;
+                font-size: 10px;
+            }
         }
 
         ul.osx-dock li {
@@ -258,6 +332,56 @@
 
         .footer-control-btn.focus:hover {
             color: black;
+        }
+
+        /* Mobile window adjustments */
+        @media (max-width: 768px) {
+            .window {
+                min-width: 300px;
+                max-width: calc(100vw - 40px);
+            }
+
+            .window.maximized {
+                top: 25px !important;
+                left: 10px !important;
+                width: calc(100% - 20px) !important;
+                height: calc(100vh - 120px) !important;
+            }
+
+            .window-header {
+                height: 38px;
+                /* Slightly taller for easier touch */
+            }
+
+            .traffic-btn {
+                width: 14px;
+                height: 14px;
+                /* Slightly larger for touch */
+            }
+
+            .window-footer {
+                height: 32px;
+                /* Taller for touch */
+            }
+
+            .footer-control-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+
+        /* Add safe area insets for notched devices */
+        @supports (padding: max(0px)) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+
+            .dock-container {
+                padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+            }
         }
 
         .iframe-container {
@@ -609,8 +733,8 @@
         <i class="fas fa-plus"></i> New Game
     </button>
 
-    <!-- macOS Dock -->
-    <div class="fixed bottom-2 left-0 right-0 flex justify-center">
+    <!-- macOS Dock - Updated with safe area considerations -->
+    <div class="dock-container">
         <ul class="osx-dock" id="macDock">
             <!-- Dock items will be added dynamically -->
         </ul>
@@ -948,7 +1072,7 @@
         let zIndexCounter = 100;
         let focusedWindow = null;
 
-        // Initialize dock
+        // Enhanced dock initialization with mobile support
         function initializeDock() {
             const dock = document.getElementById('macDock');
             dock.innerHTML = '';
@@ -965,6 +1089,7 @@
                 img.src = game.dockIcon;
                 img.alt = game.name;
                 img.title = game.name;
+                img.loading = "lazy"; // Add lazy loading for images
 
                 li.appendChild(span);
                 li.appendChild(img);
@@ -989,10 +1114,39 @@
             muteLi.onclick = muteAllGames;
             dock.appendChild(muteLi);
 
-            //resize dock
             handleWindowResize();
 
+            // Add touch support for mobile
+            if ('ontouchstart' in window) {
+                enableMobileDockSupport();
+            }
         }
+
+        // Mobile-specific dock enhancements
+        function enableMobileDockSupport() {
+            const dock = document.getElementById('macDock');
+            let touchStartX = 0;
+            let scrollLeft = 0;
+
+            dock.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].pageX - dock.offsetLeft;
+                scrollLeft = dock.scrollLeft;
+            }, { passive: true });
+
+            dock.addEventListener('touchmove', (e) => {
+                if (!touchStartX) return;
+                e.preventDefault();
+                const x = e.touches[0].pageX - dock.offsetLeft;
+                const walk = (x - touchStartX) * 2;
+                dock.scrollLeft = scrollLeft - walk;
+            }, { passive: false });
+
+            // Prevent accidental window movement when scrolling dock
+            dock.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+            });
+        }
+
 
         // Create a new window
         function createWindow(gameConfig) {
