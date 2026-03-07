@@ -2663,7 +2663,7 @@
     </script>
     <script>
 
-        let highestZ = 1000;
+        let highestZ = 99999999;
 
         function createLauncher({ title, links = [], img_url, author, footer }) {
 
@@ -2673,8 +2673,9 @@
 
             const win = document.createElement("div");
             win.style.position = "absolute";
-            win.style.top = "60px";
-            win.style.left = "60px";
+            win.style.top = "50%";
+            win.style.left = "50%";
+            win.style.transform = "translate(-50%, -50%)";
             win.style.zIndex = highestZ;
 
             win.innerHTML = `
