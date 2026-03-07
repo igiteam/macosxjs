@@ -658,7 +658,17 @@
         class="w-full h-6 px-4 fixed top-0 flex flex-row justify-between items-center text-sm text-white bg-indigo-900 bg-opacity-25 blur shadow z-50">
         <div class="flex flex-row items-center space-x-4">
             <img id="apple" class="h-4 filter-invert z-500000"
-                src="https://img.icons8.com/ios-filled/50/ffffff/mac-os.png" alt="apple_icon">
+                src="https://img.icons8.com/ios-filled/50/ffffff/mac-os.png" alt="apple_icon" onclick="createLauncher({
+        title: 'MacOSXJS',
+        img_url: 'https://cdn.sdappnet.cloud/rtx/images/bigsur.jpg',
+        links: [
+            'http://www.macosxjs.com',
+            'http://www.igiteam.github.com/sh',
+            'http://www.shbash.netlify.app'
+        ],
+        author: '© 2026 MacOSXJS',
+        footer: 'MacOSXJS is a web application running Javascript OS © 2007-2026 IgiTeam Productions, Inc.'
+    })" />
             <div id="finder" class="relative">
                 <span id="app_title" class="font-semibold cursor-default text-white" id="menuTitle">Finder</span>
             </div>
@@ -2650,6 +2660,86 @@
                 }
             });
         }
+    </script>
+    <script>
+
+        let highestZ = 1000;
+
+        function createLauncher({ title, links = [], img_url, author, footer }) {
+
+            highestZ++;
+
+            const linksHTML = links.map(l => `<div>${l}</div>`).join("");
+
+            const win = document.createElement("div");
+            win.style.position = "absolute";
+            win.style.top = "60px";
+            win.style.left = "60px";
+            win.style.zIndex = highestZ;
+
+            win.innerHTML = `
+    <div style="width:720px;background:#efefef;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:Tahoma,Arial,sans-serif;overflow:hidden;">
+    
+        <div style="display:flex;align-items:center;justify-content:center;position:relative;padding:14px 0;font-size:22px;color:#555;border-bottom:1px solid #d6d6d6;">
+    
+            <div style="position:absolute;left:12px;display:flex;gap:6px;">
+                <span style="width:14px;height:14px;border-radius:50%;background:#ff605c;"></span>
+                <span style="width:14px;height:14px;border-radius:50%;background:#ffbd44;"></span>
+                <span style="width:14px;height:14px;border-radius:50%;background:#c4c4c4;"></span>
+            </div>
+    
+            <div>${title}</div>
+    
+        </div>
+    
+        <div style="text-align:center;padding:20px;">
+    
+            <div style="display:inline-block;padding:8px;background:white;border:3px solid black;">
+                <img src="${img_url}" style="display:block;width:520px;">
+            </div>
+    
+            <div style="margin-top:22px;">
+                <button style="font-family:Tahoma,Arial;font-size:16px;padding:6px 22px;margin:8px 12px;background:#dcdcdc;border-top:2px solid white;border-left:2px solid white;border-right:2px solid #777;border-bottom:2px solid #777;">Launch</button>
+                <button style="font-family:Tahoma,Arial;font-size:16px;padding:6px 22px;margin:8px 12px;background:#dcdcdc;border-top:2px solid white;border-left:2px solid white;border-right:2px solid #777;border-bottom:2px solid #777;">Display...</button>
+                <button style="font-family:Tahoma,Arial;font-size:16px;padding:6px 22px;margin:8px 12px;background:#dcdcdc;border-top:2px solid white;border-left:2px solid white;border-right:2px solid #777;border-bottom:2px solid #777;">Advanced...</button>
+                <button style="font-family:Tahoma,Arial;font-size:16px;padding:6px 22px;margin:8px 12px;background:#dcdcdc;border-top:2px solid white;border-left:2px solid white;border-right:2px solid #777;border-bottom:2px solid #777;">Quit</button>
+            </div>
+    
+            <div style="margin-top:14px;font-size:14px;">
+                ${linksHTML}
+            </div>
+    
+            <hr style="margin-top:16px;">
+    
+            <div style="margin-top:14px;font-size:13px;line-height:1.4;color:#333;">
+                <div>${author}</div>
+                <br>
+                <div>${footer}</div>
+            </div>
+    
+        </div>
+    
+    </div>
+    `;
+
+            // bring window to front when clicked
+            win.addEventListener("mousedown", () => {
+                highestZ++;
+                win.style.zIndex = highestZ;
+            });
+
+            // close window if any button is clicked
+            win.addEventListener("click", (e) => {
+                if (e.target.tagName === "BUTTON") {
+                    win.remove();
+                }
+            });
+
+            document.body.appendChild(win);
+
+            return win;
+        }
+
     </script>
 </body>
 
