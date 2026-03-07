@@ -84,11 +84,11 @@
             margin: 0 auto;
             max-width: calc(100vw - 40px);
             overflow-x: auto;
-            overflow-y: visible;
-            /* CRITICAL: Allow vertical overflow for hover effects */
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
+            /* Hide scrollbar Firefox */
             -ms-overflow-style: none;
+            /* Hide scrollbar IE/Edge */
         }
 
         /* Hide scrollbar for Chrome/Safari */
@@ -123,42 +123,45 @@
             }
         }
 
-        /* Dock items - allow overflow and proper hover behavior */
+        /* Ensure tooltips are positioned correctly on mobile */
+        ul.osx-dock li span {
+            bottom: 80px;
+            /* Increased to account for mobile bottom area */
+            font-size: 11px;
+            white-space: nowrap;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 768px) {
+            ul.osx-dock li span {
+                bottom: 70px;
+                font-size: 10px;
+            }
+        }
+
         ul.osx-dock li {
             position: relative;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
             z-index: 100000000;
-            overflow: visible;
-            /* Allow the hover effect to overflow */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         ul.osx-dock li img {
             width: 50px;
             height: 50px;
             border-radius: 10px;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             position: relative;
-            backface-visibility: hidden;
-            /* Prevent flickering */
-            transform: translateZ(0);
-            /* Force GPU acceleration for smoother animations */
         }
 
-        /* Hover effect - pop out of the dock */
         ul.osx-dock li:hover {
             transform: scale(1.2) translateY(-10px);
             z-index: 100000001 !important;
         }
 
-        ul.osx-dock li:hover img {
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Tooltip styling */
+        /* Ensure the tooltip appears above everything */
         ul.osx-dock li span {
             background: rgba(0, 0, 0, 0.75);
             font-size: 12px;
@@ -172,32 +175,10 @@
             border-radius: 4px;
             white-space: nowrap;
             z-index: 100000002 !important;
-            pointer-events: none;
-            /* Don't let tooltip interfere with hover */
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         ul.osx-dock li:hover span {
             display: block;
-        }
-
-        /* Ensure tooltips are positioned correctly on mobile */
-        @media (max-width: 768px) {
-            ul.osx-dock li span {
-                bottom: 70px;
-                font-size: 10px;
-                padding: 3px 6px;
-            }
-        }
-
-        /* Fix for first and last items to ensure they don't get clipped by container edges */
-        ul.osx-dock li:first-child:hover {
-            transform-origin: left center;
-        }
-
-        ul.osx-dock li:last-child:hover {
-            transform-origin: right center;
         }
 
         /* Ensure dock stays above everything when active */
@@ -214,32 +195,6 @@
         /* When hovering any dock item, bring the entire dock to front */
         ul.osx-dock:hover li {
             z-index: 100000001;
-        }
-
-        /* Ensure the dock container doesn't clip anything */
-        .dock-container {
-            overflow: visible !important;
-        }
-
-        /* Add padding to dock container to accommodate hover effects */
-        @media (min-width: 769px) {
-            .dock-container {
-                padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
-            }
-        }
-
-        /* Ensure the hover effect is visible even when scrolling */
-        ul.osx-dock {
-            padding-top: 15px;
-            /* Add extra padding at top for hover effect */
-            padding-bottom: 15px;
-            /* Add extra padding at bottom for hover effect */
-        }
-
-        ul.osx-dock li {
-            margin-top: -5px;
-            /* Offset the extra padding */
-            margin-bottom: -5px;
         }
 
         /* Enhanced Window Styling */
