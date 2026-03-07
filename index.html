@@ -54,7 +54,7 @@
 
         /* Update the dock container positioning */
         .dock-container {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
@@ -63,7 +63,6 @@
             padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
             padding-left: max(8px, env(safe-area-inset-left, 8px));
             padding-right: max(8px, env(safe-area-inset-right, 8px));
-            z-index: 99999999;
             pointer-events: none;
             overflow: visible;
         }
@@ -79,11 +78,9 @@
             gap: 15px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 100;
             position: relative;
             margin: 0 auto;
             max-width: calc(100vw - 40px);
-            overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
             /* Hide scrollbar Firefox */
@@ -94,6 +91,72 @@
         /* Hide scrollbar for Chrome/Safari */
         ul.osx-dock::-webkit-scrollbar {
             display: none;
+        }
+
+        /* Ensure tooltips are positioned correctly on mobile */
+        ul.osx-dock li span {
+            bottom: 80px;
+            /* Increased to account for mobile bottom area */
+            font-size: 11px;
+            white-space: nowrap;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        ul.osx-dock li {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 99999999;
+        }
+
+        ul.osx-dock li img {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        ul.osx-dock li:hover {
+            transform: scale(1.2) translateY(-10px);
+            z-index: 99999999;
+        }
+
+        /* Ensure the tooltip appears above everything */
+        ul.osx-dock li span {
+            background: rgba(0, 0, 0, 0.75);
+            font-size: 12px;
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, 40%);
+            display: none;
+            padding: 4px 8px;
+            color: #fff;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 100000002 !important;
+        }
+
+        ul.osx-dock li:hover span {
+            display: block;
+        }
+
+        /* Ensure dock stays above everything when active */
+        ul.osx-dock {
+            z-index: 99999999 !important;
+        }
+
+        /* Make sure dock items appear above all windows */
+        ul.osx-dock li {
+            z-index: 100000000;
+            position: relative;
+        }
+
+        /* When hovering any dock item, bring the entire dock to front */
+        ul.osx-dock:hover li {
+            z-index: 100000001;
         }
 
         /* Adjust for mobile */
@@ -123,17 +186,6 @@
             }
         }
 
-        /* Ensure tooltips are positioned correctly on mobile */
-        ul.osx-dock li span {
-            bottom: 80px;
-            /* Increased to account for mobile bottom area */
-            font-size: 11px;
-            white-space: nowrap;
-            max-width: 120px;
-            /* overflow: hidden; */
-            text-overflow: ellipsis;
-        }
-
         @media (max-width: 768px) {
             ul.osx-dock li span {
                 bottom: 70px;
@@ -141,61 +193,7 @@
             }
         }
 
-        ul.osx-dock li {
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 100000000;
-        }
 
-        ul.osx-dock li img {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        ul.osx-dock li:hover {
-            transform: scale(1.2) translateY(-10px);
-            z-index: 100000001 !important;
-        }
-
-        /* Ensure the tooltip appears above everything */
-        ul.osx-dock li span {
-            background: rgba(0, 0, 0, 0.75);
-            font-size: 12px;
-            position: absolute;
-            bottom: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            padding: 4px 8px;
-            color: #fff;
-            border-radius: 4px;
-            white-space: nowrap;
-            z-index: 100000002 !important;
-        }
-
-        ul.osx-dock li:hover span {
-            display: block;
-        }
-
-        /* Ensure dock stays above everything when active */
-        ul.osx-dock {
-            z-index: 99999999 !important;
-        }
-
-        /* Make sure dock items appear above all windows */
-        ul.osx-dock li {
-            z-index: 100000000;
-            position: relative;
-        }
-
-        /* When hovering any dock item, bring the entire dock to front */
-        ul.osx-dock:hover li {
-            z-index: 100000001;
-        }
 
         /* Enhanced Window Styling */
         .window {
