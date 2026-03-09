@@ -9,6 +9,13 @@
       "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png"
     },
     {
+      "name": "Delicious Library",
+      "url": "https://deliciouslibrary.netlify.app/",
+      "icon": "https://cdn.sdappnet.cloud/rtx/images/delicious_library_icon.png",
+      "color": "#ff5f57",
+      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/delicious_library_icon.png"
+    },
+    {
       "name": "Tomb Raider",
       "url": "https://igiteam.github.io/OpenLara/",
       "icon": "https://cdn.sdappnet.cloud/rtx/images/tombraider.png",
