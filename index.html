@@ -1681,9 +1681,10 @@
         async function loadGamesFromGitHub() {
             try {
                 // Use raw.githubusercontent.com URL to your JSON file
-                // Add timestamp to prevent caching
+                // Add timestamp to prevent caching - cache
                 const timestamp = new Date().getTime();
-                const response = await fetch('https://raw.githubusercontent.com/igiteam/macosxjs/main/macosxjs.json?t=' + timestamp);
+                const url = 'https://raw.githubusercontent.com/igiteam/macosxjs/main/macosxjs.json?t=' + timestamp
+                const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
