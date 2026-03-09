@@ -10,7 +10,7 @@
     },
     {
       "name": "Delicious Library",
-      "url": "https://deliciouslibrary.netlify.app/",
+      "url": "https://deliciouslibrary.netlify.app/?t=1",
       "icon": "https://cdn.sdappnet.cloud/rtx/images/delicious_library_icon.png",
       "color": "#ff5f57",
       "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/delicious_library_icon.png"
