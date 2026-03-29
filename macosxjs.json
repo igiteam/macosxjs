@@ -1,76 +1,76 @@
 {
-  "wallpaperUrl": "https://cdn.sdappnet.cloud/rtx/images/bigsur.jpg",
+  "wallpaperUrl": "https://cdn.gitgpt.chat/rtx/images/bigsur.jpg",
   "gameUrls": [
     {
       "name": "MacOSX",
-      "url": "https://cdn.sdappnet.cloud/rtx/macosx-apps.html",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png",
+      "url": "https://cdn.gitgpt.chat/rtx/macosx-apps.html",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/mac-os-x.png",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/mac-os-x.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/mac-os-x.png"
     },
     {
       "name": "Delicious Library",
       "url": "https://deliciouslibrary.netlify.app/?t=1",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/delicious_library_icon_nice.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/delicious_library_icon_nice.png",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/delicious_library_icon_nice.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/delicious_library_icon_nice.png"
     },
     {
       "name": "Wine MacOSX",
-      "url": "https://cdn.sdappnet.cloud/rtx/macosx_wine.html",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/wine_wineskin.png",
+      "url": "https://cdn.gitgpt.chat/rtx/macosx_wine.html",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/wine_wineskin.png",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/wine_wineskin.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/wine_wineskin.png"
     },
 
     {
       "name": "Tomb Raider",
       "url": "https://igiteam.github.io/OpenLara/",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/tombraider.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/tombraider.png",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/tombraider.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/tombraider.png"
     },
     {
       "name": "Half-Life",
       "url": "https://x8bitrain.github.io/webXash/",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/halflife.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/halflife.png",
       "color": "#4cd964",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/halflife.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/halflife.png"
     },
     {
       "name": "ReDriver 2",
       "url": "https://igiteam.github.io/opendriver2.github.io/webgame/",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/redriver.jpg",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/redriver.jpg",
       "color": "#007aff",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/redriver.jpg"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/redriver.jpg"
     },
     {
       "name": "QuakeJS",
       "url": "https://www.quakejs.com/",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/quake3favicon.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/quake3favicon.png",
       "color": "#ff9500",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/quake3favicon.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/quake3favicon.png"
     },
     {
       "name": "Project IGI",
       "url": "https://igiteam.github.io/ProjectIGI/?demo",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/igifav.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/igifav.png",
       "color": "#ff9500",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/igifav.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/igifav.png"
     },
     {
       "name": "The Thing",
       "url": "https://igiteam.github.io/TheThing/?demo",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/betateam.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/betateam.png",
       "color": "#ff9500",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/betateam.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/betateam.png"
     },
     {
       "name": "PS1",
-      "url": "https://cdn.sdappnet.cloud/rtx/macosx_ps1.html",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/Playstation-Logo-Download.png",
+      "url": "https://cdn.gitgpt.chat/rtx/macosx_ps1.html",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/Playstation-Logo-Download.png",
       "color": "#ff9500",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/Playstation-Logo-Download.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/Playstation-Logo-Download.png"
     },
     {
       "name": "Mario 64",
@@ -82,52 +82,52 @@
     {
       "name": "GameboyAdvanced",
       "url": "https://igiteam.github.io/gba.js/",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/gbafavicon.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/gbafavicon.png",
       "color": "#ff2d55",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/gbafavicon.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/gbafavicon.png"
     },
     {
       "name": "Nintendo64",
       "url": "https://igiteam.github.io/Nintendo64/?demo",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/n64.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/n64.png",
       "color": "#ff2d55",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/n64.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/n64.png"
     },
     {
       "name": "MOHAA",
       "url": "https://ytembedxyz.netlify.app/?Ymd0UTVUQ25QWVk",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/MOHAA.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/MOHAA.png",
       "color": "#ff2d55",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/MOHAA.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/MOHAA.png"
     },
     {
       "name": "Doom 3",
       "url": "https://wasm.continuation-labs.com/d3demo/",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/doom3.jpg",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/doom3.jpg",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/doom3.jpg"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/doom3.jpg"
     },
     {
       "name": "MacOSX Windows",
-      "url": "https://cdn.sdappnet.cloud/rtx/macosx-apps_windows.html",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/windowsnt.png",
+      "url": "https://cdn.gitgpt.chat/rtx/macosx-apps_windows.html",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/windowsnt.png",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/windowsnt.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/windowsnt.png"
     },
     {
       "name": "Webamp",
       "url": "https://webamp.org/",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/webamp.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/webamp.png",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/webamp.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/webamp.png"
     },
 
     {
       "name": "ShBash",
       "url": "https://shbash.netlify.app/",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/bash.png",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/bash.png",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/bash.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/bash.png"
     },
     {
       "name": "Macintosh Repository",
@@ -138,10 +138,10 @@
     },
     {
       "name": "Wii & Gamecube",
-      "url": "https://cdn.sdappnet.cloud/rtx/build-mac-mini-2012-server-wii-gamecube-emulator.html",
-      "icon": "https://cdn.sdappnet.cloud/rtx/images/wiimote_cursor_.png",
+      "url": "https://cdn.gitgpt.chat/rtx/build-mac-mini-2012-server-wii-gamecube-emulator.html",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/wiimote_cursor_.png",
       "color": "#ff5f57",
-      "dockIcon": "https://cdn.sdappnet.cloud/rtx/images/wiimote_cursor_.png"
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/wiimote_cursor_.png"
     }
   ]
 }
