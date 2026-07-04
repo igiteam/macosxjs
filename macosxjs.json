@@ -66,6 +66,13 @@
       "dockIcon": "https://cdn.gitgpt.chat/rtx/images/betateam.png"
     },
     {
+      "name": "Operation Flashpoint: Cold War Crisis",
+      "url": "https://motionmark.itch.io/poseidonwasm",
+      "icon": "https://cdn.gitgpt.chat/rtx/images/operation_flashpoint_jewel.png",
+      "color": "#ff9500",
+      "dockIcon": "https://cdn.gitgpt.chat/rtx/images/operation_flashpoint_jewel.png"
+    },
+    {
       "name": "PS1",
       "url": "https://cdn.gitgpt.chat/rtx/macosx_ps1.html",
       "icon": "https://cdn.gitgpt.chat/rtx/images/Playstation-Logo-Download.png",
