@@ -1,16 +1,37 @@
-# For a simple static HTML site (no build needed)
-[site]
-  id = "6df47b6f-6792-4a74-8bb0-e2f4c41d2651"
-  name = "macosxjs"
-
 [build]
-  # NO build command needed for static HTML
-  command = "echo 'Static site - no build required'"
-  # Point directly to the folder containing your index.html
   publish = "."
+  command = "echo 'Static site - no build required'"
 
-# Optional: Add redirects if needed
+[build.environment]
+
+[build.processing]
+
+  [build.processing.css]
+
+  [build.processing.html]
+
+  [build.processing.images]
+
+  [build.processing.js]
+
+[build.services]
+
+[functions]
+
+  [functions."*"]
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
+
+  [redirects.query]
+
+  [redirects.conditions]
+
+  [redirects.headers]
+
+[site]
+  id = "6df47b6f-6792-4a74-8bb0-e2f4c41d2651"
+  name = "macosxjs"
